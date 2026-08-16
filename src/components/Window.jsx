@@ -4,12 +4,14 @@ import gsap from 'gsap';
 import MarkAI from './apps/MarkAI';
 import Notesroom from './apps/Notesroom';
 import Finder from './apps/Finder';
+import Terminal from './apps/Terminal';
+import Settings from './apps/Settings';
 
-const Window = ({ app, onClose }) => {
+// Notice the new props added here (bgTheme, setBgTheme, accentColor, setAccentColor)
+const Window = ({ app, onClose, bgTheme, setBgTheme, accentColor, setAccentColor }) => {
   const nodeRef = useRef(null);
 
   useEffect(() => {
-    // GSAP animation for window spawn
     if (nodeRef.current) {
       gsap.fromTo(
         nodeRef.current,
@@ -27,6 +29,18 @@ const Window = ({ app, onClose }) => {
         return <Notesroom />;
       case 'finder':
         return <Finder />;
+      case 'terminal':
+        return <Terminal />;
+      case 'settings':
+        // Now it can successfully pass these props down to Settings
+        return (
+          <Settings 
+            bgTheme={bgTheme} 
+            setBgTheme={setBgTheme} 
+            accentColor={accentColor} 
+            setAccentColor={setAccentColor} 
+          />
+        );
       default:
         return (
           <div className="font-mono text-sm text-gray-400">
