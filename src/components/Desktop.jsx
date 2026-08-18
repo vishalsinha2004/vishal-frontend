@@ -23,9 +23,13 @@ const Desktop = ({ systemApps, onOpenApp }) => {
           onClick={() => onOpenApp(app.id)}
           className="w-24 h-24 flex flex-col items-center justify-center rounded-lg hover:bg-space-gray hover:bg-opacity-50 transition-all duration-200 group"
         >
-          <div className="text-4xl mb-2 drop-shadow-md group-hover:scale-110 group-hover:-translate-y-1 transition-transform">
-            {app.icon}
-          </div>
+          <div className="w-12 h-12 mb-2 group-hover:scale-110 group-hover:-translate-y-1 transition-transform">
+  <img 
+    src={app.icon} 
+    alt={`${app.name} icon`} 
+    className="w-full h-full object-contain drop-shadow-md pointer-events-none"
+  />
+</div>
           <span className="text-space-white text-sm font-sans drop-shadow-md bg-black bg-opacity-40 px-2 py-1 rounded">
             {app.name}
           </span>

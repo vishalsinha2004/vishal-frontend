@@ -19,7 +19,7 @@ const Taskbar = ({ openApps = [], toggleStartMenu }) => {
             key={app.id} 
             className="flex items-center space-x-2 bg-space-gray px-3 py-1.5 rounded border border-gray-600 shadow-[inset_0_-2px_4px_rgba(0,0,0,0.6)] cursor-pointer hover:bg-opacity-80 transition-all"
           >
-            <span>{app.icon}</span>
+            <img src={app.icon} alt={app.name} className="w-5 h-5 object-contain" />
             <span className="text-sm font-sans text-space-white">{app.name}</span>
           </div>
         ))}

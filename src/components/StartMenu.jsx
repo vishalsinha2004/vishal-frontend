@@ -28,8 +28,7 @@ const StartMenu = ({ systemApps, onOpenApp, closeMenu }) => {
             }}
             className="w-full flex items-center space-x-3 p-2.5 rounded-md hover:bg-space-gray transition-colors text-left group"
           >
-            <span className="text-xl group-hover:scale-110 transition-transform">{app.icon}</span>
-            <span className="text-space-white text-sm font-sans">{app.name}</span>
+<img src={app.icon} alt={app.name} className="w-6 h-6 object-contain group-hover:scale-110 transition-transform" />            <span className="text-space-white text-sm font-sans">{app.name}</span>
           </button>
         ))}
       </div>

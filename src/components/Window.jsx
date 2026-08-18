@@ -58,7 +58,7 @@ const Window = ({ app, onClose, bgTheme, setBgTheme, accentColor, setAccentColor
         {/* Title Bar */}
         <div className="window-header cursor-move h-10 bg-[#0a0a0a] flex justify-between items-center px-4 border-b border-space-gray select-none">
           <div className="flex items-center space-x-2">
-            <span>{app.icon}</span>
+            <img src={app.icon} alt={app.name} className="w-4 h-4 object-contain" />
             <span className="text-space-white font-mono text-sm tracking-wider">{app.name}</span>
           </div>
           <button 
