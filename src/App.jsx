@@ -3,9 +3,13 @@ import Desktop from './components/Desktop';
 import Taskbar from './components/Taskbar';
 import Window from './components/Window';
 import StartMenu from './components/StartMenu';
-import TopSearch from './components/TopSearch'; // <--- NEW IMPORT
+import TopSearch from './components/TopSearch';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+
+// --- NEW: Perfect SVG Data URIs so the Native Apps never have broken icons ---
+const systemOsIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234FC3F7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='3' width='20' height='14' rx='2' ry='2'/%3E%3Cline x1='8' y1='21' x2='16' y2='21'/%3E%3Cline x1='12' y1='17' x2='12' y2='21'/%3E%3C/svg%3E";
+const settingsIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z'/%3E%3C/svg%3E";
 
 function App() {
   const [systemApps, setSystemApps] = useState([]);
@@ -38,7 +42,12 @@ function App() {
           live_link: item.live_link
         }));
         
-        setSystemApps([...formattedApps, { id: 'settings', name: 'Settings', icon: '⚙️' }]);
+        // Native OS Apps are appended here automatically!
+        setSystemApps([
+          { id: 'system-os', name: 'System OS', icon: systemOsIcon },
+          ...formattedApps, 
+          { id: 'settings', name: 'Settings', icon: settingsIcon }
+        ]);
         setLoading(false);
       })
       .catch((err) => {
@@ -75,7 +84,6 @@ function App() {
     >
       {renderBackground()}
 
-      {/* NEW: The Floating Top Search Bar */}
       <TopSearch 
         systemApps={systemApps} 
         onOpenApp={openApp} 

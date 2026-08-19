@@ -3,6 +3,86 @@ import Draggable from 'react-draggable';
 import gsap from 'gsap';
 import Settings from './Settings';
 
+// --- NEW: Dynamic System OS ("About Project") View Component ---
+const SystemOSView = ({ apiUrl }) => {
+  const [sysInfo, setSysInfo] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Fetching the dynamic project information from the new API
+    fetch(`${apiUrl}/system-os/`)
+      .then((res) => {
+        if (!res.ok) throw new Error('API Endpoint not found');
+        return res.json();
+      })
+      .then((data) => {
+        // Supports receiving either an array of objects or a single object from Django
+        setSysInfo(Array.isArray(data) ? data : [data]);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("System OS API Error:", err);
+        setError(err.message);
+        setLoading(false);
+      });
+  }, [apiUrl]);
+
+  if (loading) {
+    return <div className="h-full flex items-center justify-center font-mono text-thruster-glow animate-pulse">Fetching Project Architecture...</div>;
+  }
+
+  if (error || sysInfo.length === 0) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center font-mono text-gray-500 p-8 text-center">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="w-16 h-16 mb-4 text-gray-700"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+        <p>Awaiting Admin Panel Configuration.</p>
+        <p className="text-xs mt-2">Please ensure your Django backend is actively returning data on the <span className="text-space-white">/api/system-os/</span> endpoint.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full bg-[#050505] p-6 overflow-y-auto custom-scrollbar shadow-[inset_0_0_20px_rgba(0,0,0,0.8)]">
+      <div className="flex flex-col gap-6">
+        {sysInfo.map((item, index) => (
+          <div key={index} className="bg-[#121212] border border-space-gray hover:border-gray-500 transition-all rounded-xl p-6 shadow-lg flex flex-col md:flex-row items-start gap-6 group cursor-default">
+            
+            {/* Dynamically loaded image icon from admin panel */}
+            {(item.icon || item.image) && (
+              <div className="w-24 h-24 flex-shrink-0 bg-[#1a1a1a] p-3 rounded-xl border border-gray-700 group-hover:border-thruster-glow transition-colors">
+                <img src={item.icon || item.image} alt="Project component icon" className="w-full h-full object-contain drop-shadow-lg group-hover:scale-110 transition-transform" />
+              </div>
+            )}
+            
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+              {/* Strictly NO static headings: dynamically mapping all keys to layout */}
+              {Object.entries(item).map(([key, value]) => {
+                // Skip rendering internal IDs or image URLs as text
+                const hiddenKeys = ['id', 'icon', 'image', 'created_at', 'updated_at'];
+                if (hiddenKeys.includes(key.toLowerCase())) return null; 
+                
+                return (
+                  <div key={key} className="flex flex-col bg-[#0a0a0a] p-4 rounded-lg border border-space-gray">
+                    <span className="text-[10px] text-gray-500 uppercase font-mono tracking-widest mb-1">
+                      {key.replace(/_/g, ' ')}
+                    </span>
+                    <span className="text-sm text-space-white font-sans whitespace-pre-wrap leading-relaxed">
+                      {value}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+
+// --- Regular Window Component Logic ---
 const getRepoDetails = (url) => {
   if (!url) return null;
   const matches = url.match(/github\.com\/([^/]+)\/([^/]+)/);
@@ -33,7 +113,8 @@ const Window = ({ app, onClose, bgTheme, setBgTheme, accentColor, setAccentColor
   }, []);
 
   useEffect(() => {
-    if (app.id === 'settings') return;
+    // Prevent fetching GitHub files if it is a system app
+    if (app.id === 'settings' || app.name.toLowerCase() === 'system os' || app.id === 'system-os') return;
 
     const fetchFiles = async () => {
       const frontDetails = getRepoDetails(app.frontend_repo);
@@ -94,12 +175,20 @@ const Window = ({ app, onClose, bgTheme, setBgTheme, accentColor, setAccentColor
   };
 
   const renderAppContent = () => {
+    // 1. Settings App
     if (app.id === 'settings') {
       return (
         <Settings bgTheme={bgTheme} setBgTheme={setBgTheme} accentColor={accentColor} setAccentColor={setAccentColor} />
       );
     }
 
+    // 2. System OS / About Project App (NO GITHUB OR LIVE LINKS HERE)
+    if (app.name.toLowerCase() === 'system os' || app.id === 'system-os' || app.id === 'system_os') {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+      return <SystemOSView apiUrl={apiUrl} />;
+    }
+
+    // 3. Regular Application Window (With GitHub and Live Links)
     return (
       <div className="flex flex-col h-full bg-space-dark text-space-white p-4 overflow-y-auto custom-scrollbar">
         <div className="flex justify-between items-start border-b border-space-gray pb-4 mb-5 flex-wrap gap-4">
@@ -176,7 +265,6 @@ const Window = ({ app, onClose, bgTheme, setBgTheme, accentColor, setAccentColor
         )}
 
         {app.live_link ? (
-          /* INCREASED min-h-[400px] to min-h-[600px] for more height */
           <div className="flex-1 flex flex-col border border-space-gray rounded-lg overflow-hidden bg-black min-h-[600px]">
             <div className="bg-[#1a1a1a] px-4 py-2 border-b border-space-gray flex items-center gap-2">
                <div className="w-3 h-3 rounded-full bg-red-500"></div>
@@ -219,20 +307,20 @@ const Window = ({ app, onClose, bgTheme, setBgTheme, accentColor, setAccentColor
         }`}
       >
         <div className="window-header cursor-move h-12 bg-[#0a0a0a] flex justify-between items-center px-4 border-b border-space-gray select-none">
+          
           <div className="flex items-center space-x-3">
+            {/* The ugly SVG fallback is GONE! Native images render perfectly now. */}
             <img src={app.icon} alt={app.name} className="w-5 h-5 object-contain" />
             <span className="text-space-white font-mono text-sm tracking-wider">{app.name}</span>
           </div>
           
           <div className="flex items-center space-x-1 window-controls">
-            {/* The Maximize/Restore Button remains */}
             <button 
               onClick={() => setIsMaximized(!isMaximized)} 
               className="text-gray-400 hover:text-space-white hover:bg-space-gray transition-colors w-8 h-8 flex items-center justify-center rounded font-mono text-lg"
             >
               □
             </button>
-            {/* The Close Button remains */}
             <button 
               onClick={() => onClose(app.id)} 
               className="text-gray-400 hover:text-white hover:bg-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded text-sm font-bold"
