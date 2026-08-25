@@ -3,10 +3,12 @@ import Draggable from 'react-draggable';
 import gsap from 'gsap';
 import Settings from './Settings';
 import AboutMe from './AboutMe'; 
-import Project from './Project';           // <-- Kept the Project folder component
-import FileExplorer from './FileExplorer'; // <-- NEW: Added File Explorer component
+import ProjectPage from './Project'; 
+import FileExplorer from './FileExplorer'; 
+import Resume from './Resume'; // <-- IMPORTED NEW COMPONENT
 
 // --- Dynamic System OS ("About Project") View Component ---
+// ... [Keep SystemOSView EXACTLY as it is in your current code] ...
 const SystemOSView = ({ apiUrl }) => {
   const [sysInfo, setSysInfo] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -79,6 +81,7 @@ const SystemOSView = ({ apiUrl }) => {
   );
 };
 
+
 // --- Regular Window Component Logic ---
 const getRepoDetails = (url) => {
   if (!url) return null;
@@ -110,8 +113,8 @@ const Window = ({ app, onClose, onOpenApp, systemApps, bgTheme, setBgTheme, acce
   }, []);
 
   useEffect(() => {
-    // Prevent fetching GitHub files if it is a system app
-    const sysApps = ['settings', 'system-os', 'about-us', 'projects-folder', 'file-explorer'];
+    // Included 'resume' in the list of system apps that don't fetch GitHub files
+    const sysApps = ['settings', 'system-os', 'about-us', 'projects-folder', 'file-explorer', 'resume'];
     if (sysApps.includes(app.id) || app.name.toLowerCase() === 'about vishal') return;
 
     const fetchFiles = async () => {
@@ -173,35 +176,35 @@ const Window = ({ app, onClose, onOpenApp, systemApps, bgTheme, setBgTheme, acce
   };
 
   const renderAppContent = () => {
-    // 1. Settings
     if (app.id === 'settings') {
       return <Settings bgTheme={bgTheme} setBgTheme={setBgTheme} accentColor={accentColor} setAccentColor={setAccentColor} />;
     }
 
-    // 2. System OS 
     if (app.id === 'system-os') {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
       return <SystemOSView apiUrl={apiUrl} />;
     }
 
-    // 3. About Us 
     if (app.id === 'about-us' || app.name.toLowerCase() === 'about vishal') {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
       return <AboutMe apiUrl={apiUrl} />;
     }
 
-    // 4. All Projects Folder
-    if (app.id === 'projects-folder') {
-      const projectApps = systemApps.filter(a => !['system-os', 'about-us', 'settings', 'projects-folder', 'file-explorer'].includes(a.id));
-      return <Project apps={projectApps} onOpenApp={onOpenApp} />;
+    // --- NEW: Routing for Resume App ---
+    if (app.id === 'resume' || app.name.toLowerCase() === 'resume') {
+      return <Resume />;
     }
 
-    // 5. NEW: File Explorer
+    if (app.id === 'projects-folder') {
+      const projectApps = systemApps.filter(a => !['system-os', 'about-us', 'resume', 'settings', 'projects-folder', 'file-explorer'].includes(a.id));
+      return <ProjectPage apps={projectApps} onOpenApp={onOpenApp} />;
+    }
+
     if (app.id === 'file-explorer') {
       return <FileExplorer systemApps={systemApps} onOpenApp={onOpenApp} />;
     }
 
-    // 6. Regular Application Window (With GitHub and Live Links)
+    // Regular Application Window (With GitHub and Live Links)
     return (
       <div className="flex flex-col h-full bg-space-dark text-space-white p-4 overflow-y-auto custom-scrollbar">
         <div className="flex justify-between items-start border-b border-space-gray pb-4 mb-5 flex-wrap gap-4">
