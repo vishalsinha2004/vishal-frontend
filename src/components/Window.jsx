@@ -5,10 +5,11 @@ import Settings from './Settings';
 import AboutMe from './AboutMe'; 
 import ProjectPage from './Project'; 
 import FileExplorer from './FileExplorer'; 
-import Resume from './Resume'; // <-- IMPORTED NEW COMPONENT
+import Resume from './Resume'; 
+import TicTacToe from './TicTacToe'; 
+import ProblemSolver from './ProblemSolver'; // <-- IMPORT THE NEW GAME HERE
 
 // --- Dynamic System OS ("About Project") View Component ---
-// ... [Keep SystemOSView EXACTLY as it is in your current code] ...
 const SystemOSView = ({ apiUrl }) => {
   const [sysInfo, setSysInfo] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -113,8 +114,8 @@ const Window = ({ app, onClose, onOpenApp, systemApps, bgTheme, setBgTheme, acce
   }, []);
 
   useEffect(() => {
-    // Included 'resume' in the list of system apps that don't fetch GitHub files
-    const sysApps = ['settings', 'system-os', 'about-us', 'projects-folder', 'file-explorer', 'resume'];
+    // Add problem-solver to ignored API fetch list
+    const sysApps = ['settings', 'system-os', 'about-us', 'projects-folder', 'games-folder', 'file-explorer', 'resume', 'tic-tac-toe', 'problem-solver'];
     if (sysApps.includes(app.id) || app.name.toLowerCase() === 'about vishal') return;
 
     const fetchFiles = async () => {
@@ -176,10 +177,8 @@ const Window = ({ app, onClose, onOpenApp, systemApps, bgTheme, setBgTheme, acce
   };
 
   const renderAppContent = () => {
-    if (app.id === 'settings') {
-      return <Settings bgTheme={bgTheme} setBgTheme={setBgTheme} accentColor={accentColor} setAccentColor={setAccentColor} />;
-    }
-
+    if (app.id === 'settings') return <Settings bgTheme={bgTheme} setBgTheme={setBgTheme} accentColor={accentColor} setAccentColor={setAccentColor} />;
+    
     if (app.id === 'system-os') {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
       return <SystemOSView apiUrl={apiUrl} />;
@@ -187,22 +186,26 @@ const Window = ({ app, onClose, onOpenApp, systemApps, bgTheme, setBgTheme, acce
 
     if (app.id === 'about-us' || app.name.toLowerCase() === 'about vishal') {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
-      return <AboutMe apiUrl={apiUrl} />;
+      return <AboutMe apiUrl={apiUrl} onOpenApp={onOpenApp} />;
     }
 
-    // --- NEW: Routing for Resume App ---
-    if (app.id === 'resume' || app.name.toLowerCase() === 'resume') {
-      return <Resume />;
+    if (app.id === 'resume' || app.name.toLowerCase() === 'resume') return <Resume />;
+    if (app.id === 'tic-tac-toe') return <TicTacToe />;
+    
+    // --- NEW: Route the Problem Solver Game ---
+    if (app.id === 'problem-solver') return <ProblemSolver />;
+
+    if (app.id === 'games-folder') {
+      const gameApps = systemApps.filter(a => a.isGame);
+      return <ProjectPage apps={gameApps} onOpenApp={onOpenApp} />;
     }
 
     if (app.id === 'projects-folder') {
-      const projectApps = systemApps.filter(a => !['system-os', 'about-us', 'resume', 'settings', 'projects-folder', 'file-explorer'].includes(a.id));
+      const projectApps = systemApps.filter(a => !['system-os', 'about-us', 'resume', 'settings', 'projects-folder', 'file-explorer', 'games-folder'].includes(a.id) && !a.isGame);
       return <ProjectPage apps={projectApps} onOpenApp={onOpenApp} />;
     }
 
-    if (app.id === 'file-explorer') {
-      return <FileExplorer systemApps={systemApps} onOpenApp={onOpenApp} />;
-    }
+    if (app.id === 'file-explorer') return <FileExplorer systemApps={systemApps} onOpenApp={onOpenApp} />;
 
     // Regular Application Window (With GitHub and Live Links)
     return (
@@ -325,6 +328,19 @@ const Window = ({ app, onClose, onOpenApp, systemApps, bgTheme, setBgTheme, acce
         <div className="window-header cursor-move h-12 bg-[#0a0a0a] flex justify-between items-center px-4 border-b border-space-gray select-none">
           
           <div className="flex items-center space-x-3">
+            <button 
+              onClick={() => onClose(app.id)} 
+              className="flex items-center gap-1.5 text-gray-400 hover:text-white bg-[#1a1a1a] hover:bg-space-gray border border-gray-700 px-3 py-1 rounded-md text-xs font-sans font-bold transition-all mr-2 shadow-sm focus:outline-none"
+              title="Go Back / Close Folder"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
+                <path d="M15 18l-6-6 6-6"></path>
+              </svg>
+              Back
+            </button>
+
+            <div className="w-px h-4 bg-gray-700 mr-2"></div>
+
             <img src={app.icon} alt={app.name} className="w-5 h-5 object-contain" />
             <span className="text-space-white font-mono text-sm tracking-wider">{app.name}</span>
           </div>

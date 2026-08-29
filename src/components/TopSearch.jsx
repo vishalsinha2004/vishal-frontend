@@ -7,12 +7,10 @@ const TopSearch = ({ systemApps, onOpenApp }) => {
   const [showExpanded, setShowExpanded] = useState(false); 
   const searchRef = useRef(null);
 
-  // --- FILTER OUT INDIVIDUAL PROJECTS ---
-  // Only keep core apps (System OS, About Us, File Explorer, Resume, Settings, etc.)
-  // We identify individual projects because they usually have a 'project_type' from Django.
-  const coreApps = systemApps.filter(app => !app.project_type);
+  // --- FILTER OUT INDIVIDUAL PROJECTS & GAMES ---
+  // Hides the individual Tic Tac Toe app so only the Games Folder shows in the dock
+  const coreApps = systemApps.filter(app => !app.project_type && !app.isGame);
 
-  // Close the search dropdown if clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -24,12 +22,10 @@ const TopSearch = ({ systemApps, onOpenApp }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Reset expanded view if user starts typing
   useEffect(() => {
     if (query) setShowExpanded(false);
   }, [query]);
 
-  // Search only against the core apps
   const filteredApps = coreApps.filter(app => 
     app.name.toLowerCase().includes(query.toLowerCase())
   );
@@ -48,7 +44,6 @@ const TopSearch = ({ systemApps, onOpenApp }) => {
   return (
     <div ref={searchRef} className="absolute top-6 left-1/2 transform -translate-x-1/2 z-[60] w-[750px] max-w-[95vw] transition-all duration-300">
       
-      {/* Search Input Bar */}
       <div className={`relative flex items-center bg-space-dark bg-opacity-80 backdrop-blur-xl border rounded-full shadow-2xl px-5 py-3 transition-all z-20
         ${isFocused ? 'border-thruster-glow shadow-[0_0_30px_rgba(79,195,247,0.2)]' : 'border-space-gray hover:border-gray-500'}`}
       >
@@ -74,11 +69,9 @@ const TopSearch = ({ systemApps, onOpenApp }) => {
         )}
       </div>
 
-      {/* Expanded Search Dashboard / Results Menu */}
       {isFocused && (
         <div className="absolute top-full left-0 w-full mt-4 animate-fade-in-up z-10 flex justify-center">
             
-          {/* STATE 1: ACTIVE TYPING (List View) */}
           {query ? (
             <div className="w-full bg-[#121212] bg-opacity-95 backdrop-blur-2xl border border-space-gray rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden">
               <div className="p-2">
@@ -111,20 +104,14 @@ const TopSearch = ({ systemApps, onOpenApp }) => {
               </div>
             </div>
           ) : showExpanded ? (
-            
-            /* STATE 3: FULL APPS GRID (Loaded from new Component file) */
             <CommandCenter 
-              systemApps={coreApps} // Only pass core apps to CommandCenter 
+              systemApps={coreApps} 
               onOpenApp={handleOpen} 
               onClose={() => setShowExpanded(false)} 
             />
-
           ) : (
-            
-            /* STATE 2: EMPTY SEARCH DASHBOARD (Macbook Dock Row View) */
             <div className="flex flex-row items-end gap-4 px-6 py-4 bg-[#1a1a1a] bg-opacity-60 rounded-2xl border border-gray-700 backdrop-blur-md shadow-inner overflow-x-auto custom-scrollbar">
               
-              {/* Render dynamic core apps (excluding settings) */}
               {coreApps.filter(app => app.id !== 'settings').map(app => (
                 <div key={app.id} className="relative group flex flex-col items-center">
                   <span className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#0a0a0a] border border-gray-600 text-space-white text-[11px] px-3 py-1.5 rounded-md whitespace-nowrap shadow-lg pointer-events-none z-50 font-sans tracking-wide">
@@ -139,7 +126,6 @@ const TopSearch = ({ systemApps, onOpenApp }) => {
                 </div>
               ))}
 
-              {/* Hardcoded Terminal Icon */}
               <div className="relative group flex flex-col items-center">
                 <span className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#0a0a0a] border border-gray-600 text-space-white text-[11px] px-3 py-1.5 rounded-md whitespace-nowrap shadow-lg pointer-events-none z-50 font-sans tracking-wide">
                   Terminal
@@ -154,7 +140,6 @@ const TopSearch = ({ systemApps, onOpenApp }) => {
                 </button>
               </div>
 
-              {/* Hardcoded Settings Icon - FIXED MANGLED SVG */}
               <div className="relative group flex flex-col items-center">
                 <span className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#0a0a0a] border border-gray-600 text-space-white text-[11px] px-3 py-1.5 rounded-md whitespace-nowrap shadow-lg pointer-events-none z-50 font-sans tracking-wide">
                   Settings
@@ -172,10 +157,8 @@ const TopSearch = ({ systemApps, onOpenApp }) => {
                 </button>
               </div>
 
-              {/* Vertical Divider */}
               <div className="w-px h-10 bg-gray-700 mx-2 self-center"></div>
 
-              {/* ALL APPS / MORE BUTTON - Updated to Professional Grid SVG */}
               <div className="relative group flex flex-col items-center">
                 <span className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#0a0a0a] border border-gray-600 text-space-white text-[11px] px-3 py-1.5 rounded-md whitespace-nowrap shadow-lg pointer-events-none z-50 font-sans tracking-wide">
                   All Apps
