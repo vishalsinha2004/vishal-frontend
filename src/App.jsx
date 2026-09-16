@@ -130,7 +130,17 @@ function App() {
         </div>
       ) : (
         <Desktop 
-          systemApps={systemApps.filter(app => ['system-os', 'about-us', 'resume', 'file-explorer', 'projects-folder', 'games-folder'].includes(app.id))} 
+          systemApps={systemApps.filter(app => [
+            'system-os', 
+            'about-us', 
+            'resume', 
+            'file-explorer', 
+            'projects-folder', 
+            'games-folder',
+            'tic-tac-toe',        /* <-- ADDED THIS */
+            'problem-solver',      /* <-- ADDED THIS */
+            'settings'
+          ].includes(app.id))} 
           onOpenApp={openApp} 
         />
       )}
