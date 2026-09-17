@@ -4,6 +4,7 @@ import Taskbar from './components/Taskbar';
 import Window from './components/Window';
 import StartMenu from './components/StartMenu';
 import TopSearch from './components/TopSearch';
+import VoiceAssistant from './components/VoiceAssistant';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
@@ -168,6 +169,7 @@ function App() {
           />
         </div>
       )}
+      <VoiceAssistant />
 
       <Taskbar
         openApps={openApps}
