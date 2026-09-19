@@ -8,50 +8,81 @@ import VoiceAssistant from './components/VoiceAssistant';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
-// --- UPGRADED PROFESSIONAL SVG ICONS ---
+// --- RETRO PIXEL ICONS (Base64 or external links for 90s aesthetic) ---
+// Note: We use simple placeholder geometric representations of classic icons until pixel art is swapped in.
 
-// System OS: High-tech CPU/Microchip
-const systemOsIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234FC3F7' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='4' width='16' height='16' rx='2' ry='2'/%3E%3Crect x='9' y='9' width='6' height='6'/%3E%3Cline x1='9' y1='1' x2='9' y2='4'/%3E%3Cline x1='15' y1='1' x2='15' y2='4'/%3E%3Cline x1='9' y1='20' x2='9' y2='23'/%3E%3Cline x1='15' y1='20' x2='15' y2='23'/%3E%3Cline x1='20' y1='9' x2='23' y2='9'/%3E%3Cline x1='20' y1='14' x2='23' y2='14'/%3E%3Cline x1='1' y1='9' x2='4' y2='9'/%3E%3Cline x1='1' y1='14' x2='4' y2='14'/%3E%3C/svg%3E";
+const systemOsIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='24' height='24' fill='%23c0c0c0' stroke='%23000' stroke-width='2'/%3E%3Crect x='8' y='8' width='16' height='12' fill='%23000080' stroke='%23000' stroke-width='2'/%3E%3Crect x='6' y='22' width='20' height='4' fill='%23808080'/%3E%3C/svg%3E";
 
-// About Vishal: Modern ID Badge / Access Card
-const aboutUsIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234ade80' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Ccircle cx='12' cy='10' r='3'/%3E%3Cpath d='M7 22v-2a5 5 0 0 1 10 0v2'/%3E%3C/svg%3E";
+const aboutUsIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='6' y='4' width='20' height='24' fill='%23fff' stroke='%23000' stroke-width='2'/%3E%3Ccircle cx='16' cy='12' r='4' fill='%23000080'/%3E%3Cpath d='M10 24v-2c0-3 3-4 6-4s6 1 6 4v2' fill='%23000080'/%3E%3C/svg%3E";
 
-// Settings: Professional Control Sliders
-const settingsIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='4' y1='21' x2='4' y2='14'/%3E%3Cline x1='4' y1='10' x2='4' y2='3'/%3E%3Cline x1='12' y1='21' x2='12' y2='12'/%3E%3Cline x1='12' y1='8' x2='12' y2='3'/%3E%3Cline x1='20' y1='21' x2='20' y2='16'/%3E%3Cline x1='20' y1='12' x2='20' y2='3'/%3E%3Cline x1='1' y1='14' x2='7' y2='14'/%3E%3Cline x1='9' y1='8' x2='15' y2='8'/%3E%3Cline x1='17' y1='16' x2='23' y2='16'/%3E%3C/svg%3E";
+const settingsIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='24' height='24' fill='%23c0c0c0' stroke='%23000' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23808080' stroke='%23000' stroke-width='2'/%3E%3Crect x='14' y='8' width='4' height='16' fill='%23000'/%3E%3Crect x='8' y='14' width='16' height='4' fill='%23000'/%3E%3C/svg%3E";
 
-// Projects Folder: Folder with Code Brackets
-const folderIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FCD34D' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z'/%3E%3Cpolyline points='9 14 7 12 9 10'/%3E%3Cpolyline points='15 14 17 12 15 10'/%3E%3C/svg%3E";
+const folderIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 8h8l2 4h14v12H4z' fill='%23ffff00' stroke='%23000' stroke-width='2' stroke-linejoin='miter'/%3E%3Cpath d='M4 12h24' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E";
 
-// File Explorer: Directory Grid / Server Rack
-// File Explorer: Professional Filing Cabinet / Archive
-const fileExplorerIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2360A5FA' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='2' width='16' height='20' rx='2' ry='2'/%3E%3Cline x1='4' y1='12' x2='20' y2='12'/%3E%3Cline x1='10' y1='7' x2='14' y2='7'/%3E%3Cline x1='10' y1='17' x2='14' y2='17'/%3E%3C/svg%3E";
+const fileExplorerIcon = folderIcon;
 
-// Resume: Smart Profile Document
-const resumeIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23C084FC' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3Ccircle cx='10' cy='13' r='2'/%3E%3Cpath d='M7 19v-1a3 3 0 0 1 6 0v1'/%3E%3C/svg%3E";
+const resumeIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='6' y='4' width='20' height='24' fill='%23fff' stroke='%23000' stroke-width='2'/%3E%3Cline x1='10' y1='10' x2='22' y2='10' stroke='%23000' stroke-width='2'/%3E%3Cline x1='10' y1='14' x2='22' y2='14' stroke='%23000' stroke-width='2'/%3E%3Cline x1='10' y1='18' x2='18' y2='18' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E";
 
-// Games Folder: Folder with Gamepad / D-Pad
-const gamesFolderIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A78BFA' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z'/%3E%3Cline x1='6' y1='12' x2='10' y2='12'/%3E%3Cline x1='8' y1='10' x2='8' y2='14'/%3E%3Cline x1='15' y1='13' x2='15.01' y2='13'/%3E%3Cline x1='18' y1='11' x2='18.01' y2='11'/%3E%3C/svg%3E";
+const gamesFolderIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 8h8l2 4h14v12H4z' fill='%23ff00ff' stroke='%23000' stroke-width='2' stroke-linejoin='miter'/%3E%3Ccircle cx='16' cy='18' r='4' fill='%23fff' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E";
 
-// Tic Tac Toe: Exact Custom Wooden Match 
-const ticTacToeIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='1' y='1' width='22' height='22' rx='2' fill='%23e6c28f'/%3E%3Cpath d='M8.5 2v20M15.5 2v20M2 8.5h20M2 15.5h20' stroke='%235a3a22' stroke-width='1.5' stroke-linecap='round'/%3E%3Cg stroke='%23f25c05' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M3 3l4 4M7 3l-4 4'/%3E%3Cpath d='M17 3l4 4M21 3l-4 4'/%3E%3Cpath d='M10 10l4 4M14 10l-4 4'/%3E%3Cpath d='M3 17l4 4M7 17l-4 4'/%3E%3Cpath d='M17 17l4 4M21 17l-4 4'/%3E%3C/g%3E%3Cg stroke='%231a1a1a' stroke-width='2' fill='none'%3E%3Ccircle cx='12' cy='5' r='2'/%3E%3Ccircle cx='5' cy='12' r='2'/%3E%3Ccircle cx='19' cy='12' r='2'/%3E%3Ccircle cx='12' cy='19' r='2'/%3E%3C/g%3E%3C/svg%3E";
+const ticTacToeIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='24' height='24' fill='%23fff' stroke='%23000' stroke-width='2'/%3E%3Cline x1='12' y1='6' x2='12' y2='26' stroke='%23000' stroke-width='2'/%3E%3Cline x1='20' y1='6' x2='20' y2='26' stroke='%23000' stroke-width='2'/%3E%3Cline x1='6' y1='12' x2='26' y2='12' stroke='%23000' stroke-width='2'/%3E%3Cline x1='6' y1='20' x2='26' y2='20' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E";
 
-// Problem Solver: Cyber Radar / Target Crosshair
-const problemSolverIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2334D399' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ccircle cx='12' cy='12' r='6'/%3E%3Ccircle cx='12' cy='12' r='2'/%3E%3Cline x1='12' y1='2' x2='12' y2='6'/%3E%3Cline x1='12' y1='18' x2='12' y2='22'/%3E%3Cline x1='2' y1='12' x2='6' y2='12'/%3E%3Cline x1='18' y1='12' x2='22' y2='12'/%3E%3C/svg%3E";
+const problemSolverIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='24' height='24' fill='%23000' stroke='%23000' stroke-width='2'/%3E%3Ctext x='8' y='20' font-family='monospace' font-size='16' fill='%2300ff00'\>C:\\\</text\>%3C/svg%3E";
 
 
 function App() {
   const [systemApps, setSystemApps] = useState([]);
   const [openApps, setOpenApps] = useState([]);
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  
+  // Retro Boot Sequence States
+  const [bootState, setBootState] = useState(0); // 0: BIOS, 1: Loading OS, 2: Login, 3: Desktop
+  const [bootText, setBootText] = useState([]);
 
-  const [bgTheme, setBgTheme] = useState('space');
-  const [accentColor, setAccentColor] = useState('#4FC3F7');
+  // Theme configuration (Persisted)
+  const [isCrtMode, setIsCrtMode] = useState(true);
 
+  // BIOS Boot Sequence Logic
   useEffect(() => {
-    document.documentElement.style.setProperty('--color-thruster-glow', accentColor);
-  }, [accentColor]);
+    const biosLines = [
+      "VISHAL OS 98 System BIOS v1.0",
+      "Copyright (C) 1998 Vishal Sinha",
+      "",
+      "Main Processor: Pentium(R) II 300 MHz",
+      "Memory Test:  65536K OK",
+      "",
+      "Detecting Primary Master ... HARD DISK",
+      "Detecting Primary Slave  ... NONE",
+      "Detecting Keyboard       ... OK",
+      "Detecting Mouse          ... OK",
+      "",
+      "Loading system files...",
+    ];
 
+    let currentLine = 0;
+    
+    if (bootState === 0) {
+      const interval = setInterval(() => {
+        if (currentLine < biosLines.length) {
+          setBootText(prev => [...prev, biosLines[currentLine]]);
+          currentLine++;
+        } else {
+          clearInterval(interval);
+          setTimeout(() => setBootState(1), 800);
+        }
+      }, 150); // Speed of BIOS text appearing
+      return () => clearInterval(interval);
+    }
+
+    if (bootState === 1) {
+      const timer = setTimeout(() => {
+        setBootState(2); // Move to Login screen
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [bootState]);
+
+  // Fetch Apps from Backend
   useEffect(() => {
     fetch(`${API_BASE_URL}/system-apps/`)
       .then((res) => {
@@ -71,24 +102,26 @@ function App() {
           project_type: item.project_type
         }));
         
-        // Added Problem Solver App (tagged with isGame: true)
         setSystemApps([
-          { id: 'system-os', name: 'System OS', icon: systemOsIcon },
+          { id: 'system-os', name: 'My Computer', icon: systemOsIcon },
           { id: 'about-us', name: 'About Vishal', icon: aboutUsIcon },
           { id: 'resume', name: 'Resume', icon: resumeIcon },
           { id: 'file-explorer', name: 'File Explorer', icon: fileExplorerIcon },
-          { id: 'projects-folder', name: 'All Projects', icon: folderIcon },
+          { id: 'projects-folder', name: 'Projects', icon: folderIcon },
           { id: 'games-folder', name: 'Games', icon: gamesFolderIcon }, 
           { id: 'tic-tac-toe', name: 'Tic Tac Toe', icon: ticTacToeIcon, isGame: true }, 
-          { id: 'problem-solver', name: 'Problem Solver', icon: problemSolverIcon, isGame: true }, 
+          { id: 'problem-solver', name: 'MS-DOS Prompt', icon: problemSolverIcon, isGame: true }, 
           ...formattedApps, 
-          { id: 'settings', name: 'Settings', icon: settingsIcon }
+          { id: 'settings', name: 'Control Panel', icon: settingsIcon }
         ]);
-        setLoading(false);
       })
       .catch((err) => {
         console.error('Failed to load apps from backend:', err);
-        setLoading(false);
+        // Fallback so development doesn't break
+        setSystemApps([
+           { id: 'system-os', name: 'My Computer', icon: systemOsIcon },
+           { id: 'settings', name: 'Control Panel', icon: settingsIcon }
+        ]);
       });
   }, []);
 
@@ -103,83 +136,139 @@ function App() {
     setOpenApps(openApps.filter((app) => app.id !== appId));
   };
 
-  const renderBackground = () => {
-    if (bgTheme === 'matrix') {
-      return <div className="absolute inset-0 bg-[#000000] opacity-90 pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjMDAwIj48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDBMOCA4Wk04IDBMMCA4WiIgc3Ryb2tlPSIjMTEyMjExIiBzdHJva2Utd2lkdGg9IjEiPjwvcGF0aD4KPC9zdmc+')]"></div>;
-    }
-    if (bgTheme === 'solid') {
-      return <div className="absolute inset-0 bg-space-black pointer-events-none"></div>;
-    }
-    return <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#1a1a2e] via-space-black to-black opacity-80 pointer-events-none animate-pulse duration-[10000ms]"></div>;
+  const handleLogin = () => {
+    // Play startup sound here eventually
+    setBootState(3);
+  };
+
+  // Skip boot sequence on click
+  const handleSkipBoot = () => {
+    if (bootState < 3) setBootState(3);
   };
 
   return (
     <div
-      className="relative h-screen w-screen bg-space-black text-space-white overflow-hidden flex flex-col"
+      className="relative h-screen w-screen bg-os-teal text-os-text overflow-hidden flex flex-col font-sans select-none"
       onClick={() => isStartMenuOpen && setIsStartMenuOpen(false)}
     >
-      {renderBackground()}
+      {/* Optional CRT Overlay Effect */}
+      {isCrtMode && <div className="crt-overlay pointer-events-none"></div>}
 
-      <TopSearch 
-        systemApps={systemApps} 
-        onOpenApp={openApp} 
-      />
-
-      {loading ? (
-        <div className="flex-1 flex items-center justify-center font-mono text-thruster-glow animate-pulse">
-          &gt; Loading System Modules from Database...
+      {/* --- STATE 0: BIOS BOOT SCREEN --- */}
+      {bootState === 0 && (
+        <div className="absolute inset-0 bg-black text-[#c0c0c0] font-mono text-lg p-6 z-[9999]" onClick={handleSkipBoot}>
+          {bootText.map((line, index) => (
+            <div key={index}>{line}</div>
+          ))}
+          <div className="mt-4 animate-pulse">_</div>
+          <div className="absolute bottom-4 left-4 text-sm text-gray-600">Click anywhere to skip boot sequence</div>
         </div>
-      ) : (
-        <Desktop 
-          systemApps={systemApps.filter(app => [
-            'system-os', 
-            'about-us', 
-            'resume', 
-            'file-explorer', 
-            'projects-folder', 
-            'games-folder',
-            'tic-tac-toe',        /* <-- ADDED THIS */
-            'problem-solver',      /* <-- ADDED THIS */
-            'settings'
-          ].includes(app.id))} 
-          onOpenApp={openApp} 
-        />
       )}
 
-      {openApps.map((app) => (
-        <Window 
-          key={app.id} 
-          app={app} 
-          onClose={closeApp} 
-          onOpenApp={openApp}       
-          systemApps={systemApps}   
-          bgTheme={bgTheme} 
-          setBgTheme={setBgTheme}
-          accentColor={accentColor}
-          setAccentColor={setAccentColor}
-        />
-      ))}
+      {/* --- STATE 1: WINDOWS LOADING LOGO --- */}
+      {bootState === 1 && (
+        <div className="absolute inset-0 bg-black flex flex-col items-center justify-center z-[9999]" onClick={handleSkipBoot}>
+          <div className="text-4xl font-sans font-bold text-os-white mb-8 tracking-widest italic">
+            VISHAL OS <span className="text-os-teal">98</span>
+          </div>
+          <div className="w-64 h-6 border-2 border-os-gray p-1">
+             <div className="h-full bg-os-navy w-1/2 animate-[slide_1.5s_infinite_linear]"></div>
+          </div>
+          <style>{`
+            @keyframes slide {
+              0% { transform: translateX(-100%); }
+              100% { transform: translateX(200%); }
+            }
+          `}</style>
+        </div>
+      )}
 
-      {isStartMenuOpen && (
-        <div onClick={(e) => e.stopPropagation()}>
-          <StartMenu
-            systemApps={systemApps.filter(app => !['settings'].includes(app.id))}
-            onOpenApp={openApp}
-            closeMenu={() => setIsStartMenuOpen(false)}
+      {/* --- STATE 2: LOGIN SCREEN --- */}
+      {bootState === 2 && (
+        <div className="absolute inset-0 bg-os-teal flex items-center justify-center z-[9998]">
+           <div className="retro-window w-96">
+              <div className="retro-title-bar">
+                 <span>Welcome to Vishal OS</span>
+                 <button className="retro-btn px-2 py-0 h-5" onClick={handleLogin}>X</button>
+              </div>
+              <div className="p-4 flex gap-4">
+                 <div className="w-12 h-12 bg-os-navy flex items-center justify-center text-os-white font-bold text-xl border-2 border-os-gray">
+                   V
+                 </div>
+                 <div className="flex-1">
+                    <p className="text-sm mb-4">Type a user name and password to log on to Windows.</p>
+                    <div className="flex items-center mb-2">
+                       <label className="w-20 text-sm">User name:</label>
+                       <input type="text" className="retro-input flex-1" defaultValue="GUEST" />
+                    </div>
+                    <div className="flex items-center">
+                       <label className="w-20 text-sm">Password:</label>
+                       <input type="password" className="retro-input flex-1" />
+                    </div>
+                 </div>
+              </div>
+              <div className="bg-os-gray p-2 border-t border-os-dark-gray flex justify-end gap-2 shadow-retro-inset">
+                 <button className="retro-btn" onClick={handleLogin}>OK</button>
+                 <button className="retro-btn" onClick={handleLogin}>Cancel</button>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* --- STATE 3: MAIN DESKTOP ENVIRONMENT --- */}
+      {bootState === 3 && (
+        <>
+          <Desktop 
+            systemApps={systemApps.filter(app => [
+              'system-os', 
+              'about-us', 
+              'resume', 
+              'file-explorer', 
+              'projects-folder', 
+              'games-folder',
+              'tic-tac-toe',        
+              'problem-solver',     
+              'settings'
+            ].includes(app.id))} 
+            onOpenApp={openApp} 
           />
-        </div>
-      )}
-      <VoiceAssistant />
 
-      <Taskbar
-        openApps={openApps}
-        onCloseApp={closeApp}       
-        onOpenApp={openApp}
-        toggleStartMenu={(e) => {
-          e.stopPropagation();
-          setIsStartMenuOpen(!isStartMenuOpen);
-        }}
-      />
+          {openApps.map((app) => (
+            <Window 
+              key={app.id} 
+              app={app} 
+              onClose={closeApp} 
+              onOpenApp={openApp}       
+              systemApps={systemApps}   
+            />
+          ))}
+
+          {/* Retro Start Menu Overlay */}
+          {isStartMenuOpen && (
+            <div onClick={(e) => e.stopPropagation()}>
+              <StartMenu
+                systemApps={systemApps.filter(app => !['settings'].includes(app.id))}
+                onOpenApp={openApp}
+                closeMenu={() => setIsStartMenuOpen(false)}
+              />
+            </div>
+          )}
+
+          {/* Voice Assistant - Hidden or adapted for retro look later */}
+          <VoiceAssistant />
+
+          <Taskbar
+            openApps={openApps}
+            onCloseApp={closeApp}       
+            onOpenApp={openApp}
+            isStartMenuOpen={isStartMenuOpen}
+            toggleStartMenu={(e) => {
+              e.stopPropagation();
+              setIsStartMenuOpen(!isStartMenuOpen);
+            }}
+          />
+        </>
+      )}
     </div>
   );
 }

@@ -1,36 +1,30 @@
-import React, { useEffect, useRef } from 'react';
-import gsap from 'gsap';
+import React from 'react';
 
 const Desktop = ({ systemApps, onOpenApp }) => {
-  const desktopRef = useRef(null);
-
-  useEffect(() => {
-    // GSAP staggered animation for icons loading in
-    if (desktopRef.current) {
-      gsap.fromTo(
-        desktopRef.current.children,
-        { y: 50, opacity: 0, scale: 0.8 },
-        { y: 0, opacity: 1, scale: 1, duration: 0.6, stagger: 0.1, ease: "back.out(1.5)" }
-      );
-    }
-  }, []);
-
   return (
-    <div ref={desktopRef} className="flex-1 h-full w-full p-6 flex flex-col flex-wrap gap-6 content-start z-10">
+    // Classic tight padding and column-based wrap layout
+    <div className="flex-1 h-full w-full p-2 flex flex-col flex-wrap gap-4 content-start z-10">
       {systemApps.map((app) => (
         <button 
           key={app.id} 
+          // Note: In a true 90s OS this would be onDoubleClick, but onClick is better for web UX.
+          // We style the hover state to look exactly like a 90s single-click selection.
           onClick={() => onOpenApp(app.id)}
-          className="w-24 h-24 flex flex-col items-center justify-center rounded-lg hover:bg-space-gray hover:bg-opacity-50 transition-all duration-200 group"
+          className="w-20 flex flex-col items-center justify-start focus:outline-none group mt-2"
+          title={app.name}
         >
-          <div className="w-12 h-12 mb-2 group-hover:scale-110 group-hover:-translate-y-1 transition-transform">
-  <img 
-    src={app.icon} 
-    alt={`${app.name} icon`} 
-    className="w-full h-full object-contain drop-shadow-md pointer-events-none"
-  />
-</div>
-          <span className="text-space-white text-sm font-sans drop-shadow-md bg-black bg-opacity-40 px-2 py-1 rounded">
+          {/* Classic 32x32 size icon container, absolutely NO scale or translate animations */}
+          <div className="w-8 h-8 mb-1">
+            <img 
+              src={app.icon} 
+              alt={`${app.name} icon`} 
+              className="w-full h-full object-contain pointer-events-none"
+              style={{ imageRendering: 'pixelated' }} // Forces a crisp, non-blurry look
+            />
+          </div>
+          
+          {/* Retro text highlight effect: navy background with a dotted border on hover */}
+          <span className="text-os-white text-[11px] font-sans px-1 text-center leading-tight border border-transparent group-hover:bg-os-navy group-hover:border-os-white border-dotted line-clamp-2 shadow-sm">
             {app.name}
           </span>
         </button>

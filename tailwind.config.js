@@ -7,26 +7,24 @@ export default {
   theme: {
     extend: {
       colors: {
-        'space-black': '#050505',
-        'space-dark': '#121212',
-        'space-gray': '#2A2A2A',
-        'space-white': '#E0E0E0',
-        'thruster-blue': '#005288', // classic SpaceX blue
-        'thruster-glow': '#4FC3F7',
+        // Classic Windows 95/98 Palette
+        'os-teal': '#008080',
+        'os-gray': '#c0c0c0',
+        'os-dark-gray': '#808080',
+        'os-navy': '#000080',
+        'os-text': '#000000',
+        'os-white': '#ffffff',
+        'os-black': '#000000',
       },
       fontFamily: {
-        'sans': ['Inter', 'sans-serif'], // Gives that clean, modern tech feel
-        'mono': ['Fira Code', 'monospace'], // For terminal/code elements
+        // 90s system fonts priority
+        'sans': ['Tahoma', '"MS Sans Serif"', 'Arial', 'sans-serif'],
+        'mono': ['"Courier New"', 'Courier', 'monospace'],
       },
-      // Now correctly inside the 'extend' block!
-      keyframes: {
-        'fade-in-up': {
-          '0%': { opacity: '0', transform: 'translateY(10px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        }
-      },
-      animation: {
-        'fade-in-up': 'fade-in-up 0.2s ease-out',
+      boxShadow: {
+        // Classic 1px bevels (Outset for buttons/windows, Inset for inputs/depressed states)
+        'retro-outset': 'inset 1px 1px #ffffff, inset -1px -1px #000000, inset 2px 2px #dfdfdf, inset -2px -2px #808080',
+        'retro-inset': 'inset 1px 1px #000000, inset -1px -1px #ffffff, inset 2px 2px #808080, inset -2px -2px #dfdfdf',
       }
     },
   },

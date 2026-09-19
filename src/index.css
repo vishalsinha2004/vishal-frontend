@@ -1,29 +1,110 @@
 @import "tailwindcss";
 
 @theme {
-  /* Colors */
-  --color-space-black: #050505;
-  --color-space-dark: #121212;
-  --color-space-gray: #2A2A2A;
-  --color-space-white: #E0E0E0;
-  --color-thruster-blue: #005288;
-  --color-thruster-glow: #4FC3F7;
+  /* Classic Windows 95/98 Palette */
+  --color-os-teal: #008080;
+  --color-os-gray: #c0c0c0;
+  --color-os-dark-gray: #808080;
+  --color-os-navy: #000080;
+  --color-os-text: #000000;
+  --color-os-white: #ffffff;
+  --color-os-black: #000000;
 
-  /* Fonts */
-  --font-sans: "Inter", sans-serif;
-  --font-mono: "Fira Code", monospace;
+  /* 90s system fonts priority */
+  --font-sans: Tahoma, "MS Sans Serif", Arial, sans-serif;
+  --font-mono: "Courier New", Courier, monospace;
 
-  /* Animations */
-  --animate-fade-in-up: fade-in-up 0.2s ease-out;
+  /* Classic 1px bevels */
+  --shadow-retro-outset: inset 1px 1px #ffffff, inset -1px -1px #000000, inset 2px 2px #dfdfdf, inset -2px -2px #808080;
+  --shadow-retro-inset: inset 1px 1px #000000, inset -1px -1px #ffffff, inset 2px 2px #808080, inset -2px -2px #dfdfdf;
 }
 
-@keyframes fade-in-up {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
+@layer base {
+  body {
+    @apply bg-os-teal text-os-text font-sans antialiased;
+    /* Prevent bouncy scrolling on the desktop */
+    overflow: hidden; 
+    margin: 0;
+    padding: 0;
+    /* Disable modern tap highlights on mobile */
+    -webkit-tap-highlight-color: transparent; 
   }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
+
+  /* Custom retro scrollbar */
+  ::-webkit-scrollbar {
+    width: 16px;
+    height: 16px;
+    background: var(--color-os-gray);
   }
+  ::-webkit-scrollbar-button:single-button {
+    background-color: var(--color-os-gray);
+    display: block;
+    height: 16px;
+    width: 16px;
+    box-shadow: var(--shadow-retro-outset);
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-os-gray);
+    box-shadow: var(--shadow-retro-outset);
+  }
+  ::-webkit-scrollbar-thumb:active {
+    background-color: var(--color-os-dark-gray);
+  }
+}
+
+@layer components {
+  /* Reusable Retro UI Elements */
+  
+  .retro-window {
+    @apply bg-os-gray shadow-retro-outset p-[2px] flex flex-col;
+  }
+
+  .retro-title-bar {
+    @apply bg-os-navy text-os-white font-bold text-sm px-1 py-[2px] flex justify-between items-center;
+  }
+
+  .retro-title-bar-inactive {
+    @apply bg-os-dark-gray text-os-gray font-bold text-sm px-1 py-[2px] flex justify-between items-center;
+  }
+
+  .retro-btn {
+    @apply bg-os-gray text-os-text text-sm shadow-retro-outset px-3 py-1 flex items-center justify-center focus:outline-none focus:ring-1 focus:ring-black focus:ring-offset-0;
+  }
+
+  .retro-btn:active, .retro-btn-active {
+    @apply shadow-retro-inset pt-[5px] pb-[3px] pl-[13px] pr-[11px]; /* Shift text down/right to simulate mechanical press */
+  }
+
+  .retro-input {
+    @apply bg-os-white text-os-text shadow-retro-inset px-2 py-1 outline-none focus:bg-white text-sm;
+  }
+
+  .retro-panel-inset {
+    @apply bg-os-white shadow-retro-inset p-1;
+  }
+
+  .retro-menu-bar {
+    @apply bg-os-gray text-os-text text-sm flex gap-2 px-2 py-1;
+  }
+
+  .retro-menu-item {
+    @apply px-2 py-0.5 hover:bg-os-navy hover:text-os-white cursor-default;
+  }
+
+  .retro-status-bar {
+    @apply bg-os-gray shadow-retro-inset mt-1 px-2 py-0.5 text-xs text-os-text flex justify-between;
+  }
+}
+
+/* Optional CRT Overlay (Can be toggled via state later) */
+.crt-overlay {
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+  background-size: 100% 4px;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
 }
