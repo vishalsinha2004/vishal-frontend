@@ -1,25 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-// --- Helper component to handle individual image loading states ---
+// --- Classic 90s Pixel Icon Component ---
+// Removed the modern spinning loader ring and smooth fade-in transitions.
+// Added pixelated rendering to give high-res images a chunkier, aliased look.
 const ProjectIcon = ({ src, alt }) => {
-  const [isLoading, setIsLoading] = useState(true);
-
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          {/* A sleek, spinning loader ring */}
-          <div className="w-6 h-6 border-2 border-space-gray border-t-thruster-glow rounded-full animate-spin"></div>
-        </div>
-      )}
-      <img 
-        src={src} 
-        alt={alt} 
-        className={`w-full h-full object-contain drop-shadow-md transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
-        onLoad={() => setIsLoading(false)}
-        onError={() => setIsLoading(false)} // Stops the spinner if the image link is broken
-      />
-    </div>
+    <img 
+      src={src} 
+      alt={alt} 
+      className="w-10 h-10 object-contain pointer-events-none"
+      style={{ imageRendering: 'pixelated' }}
+    />
   );
 };
 
@@ -29,31 +20,31 @@ const Project = ({ apps, onOpenApp }) => {
   const clients = apps.filter(a => a.project_type === 'Client Project');
   const personal = apps.filter(a => !a.project_type || a.project_type === 'Personal Project');
 
-  // Reusable Grid Renderer for each section (Icons Removed for cleaner UI)
+  // Reusable Classic Folder Grid Renderer
   const renderGrid = (title, categoryApps) => {
     if (categoryApps.length === 0) return null;
     
     return (
-      <div className="mb-10 animate-fade-in-up">
-        {/* Clean, minimalist header without SVG icons */}
-        <h3 className="text-lg font-bold text-thruster-glow mb-5 border-b border-space-gray pb-2 tracking-wide">
+      <div className="mb-6">
+        {/* Classic 90s grouping header */}
+        <h3 className="text-sm font-bold text-os-text mb-3 border-b border-os-dark-gray pb-1 select-none">
           {title}
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-6">
           {categoryApps.map(app => (
             <button
               key={app.id}
               onClick={() => onOpenApp(app.id)}
-              className="flex flex-col items-center gap-3 p-4 rounded-xl hover:bg-space-gray border border-transparent hover:border-gray-600 transition-all group focus:outline-none"
+              className="flex flex-col items-center gap-1 focus:outline-none group"
+              title={app.description || `${app.name} Executable`}
             >
-              <div className="w-16 h-16 bg-[#1a1a1a] p-3 rounded-2xl shadow-lg border border-gray-700 group-hover:border-thruster-glow group-hover:scale-110 transition-transform duration-300 flex items-center justify-center">
-                
-                {/* Replaced standard <img> with our loading component */}
+              <div className="w-12 h-12 flex items-center justify-center mb-1">
                 <ProjectIcon src={app.icon} alt={app.name} />
-                
               </div>
-              <span className="text-xs font-sans font-bold text-gray-300 group-hover:text-white text-center">
-                {app.name}
+              
+              {/* Classic Selection State: Navy background with dotted border on hover */}
+              <span className="text-xs font-sans px-1 text-center line-clamp-2 leading-tight border border-transparent group-hover:bg-os-navy group-hover:text-os-white group-hover:border-dotted group-hover:border-os-white cursor-default">
+                {app.name}.exe
               </span>
             </button>
           ))}
@@ -62,11 +53,10 @@ const Project = ({ apps, onOpenApp }) => {
     );
   };
 
-  // Pure content area - Window.jsx handles the borders, header, and dragging
   return (
-    <div className="h-full bg-space-dark p-6 overflow-y-auto custom-scrollbar">
+    // Classic Windows 98 File Explorer content pane: White background, inset shadow
+    <div className="h-full bg-os-white p-4 overflow-y-auto custom-scrollbar shadow-retro-inset m-1 border border-os-dark-gray font-sans">
       <div className="max-w-6xl mx-auto">
-        {/* Passing only the title and the filtered arrays */}
         {renderGrid('Startup Ventures', startups)}
         {renderGrid('Client Projects', clients)}
         {renderGrid('Personal Projects', personal)}

@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import CommandCenter from './CommandCenter';
+
+// --- Retro Pixel Icons ---
+const findIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M20 20l8 8' stroke='%23000' stroke-width='4' stroke-linecap='square'/%3E%3Ccircle cx='14' cy='14' r='8' fill='%23fff' stroke='%23000' stroke-width='2'/%3E%3Cpath d='M12 16l4-4' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E";
+const aiIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='8' width='24' height='16' fill='%23000' stroke='%23000' stroke-width='2'/%3E%3Ccircle cx='10' cy='16' r='2' fill='%23ff0000'/%3E%3Ccircle cx='22' cy='16' r='2' fill='%23ff0000'/%3E%3Cpath d='M14 20h4' stroke='%2300ff00' stroke-width='2'/%3E%3C/svg%3E";
 
 const TopSearch = ({ systemApps, onOpenApp }) => {
   const [query, setQuery] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
-  const [showExpanded, setShowExpanded] = useState(false); 
+  const [isFocused, setIsFocused] = useState(false); // Controls if the dialog is open
   const [aiResponse, setAiResponse] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
   const searchRef = useRef(null);
@@ -16,20 +18,14 @@ const TopSearch = ({ systemApps, onOpenApp }) => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Allow closing the Find dialog if clicking outside of it
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setIsFocused(false);
-        setShowExpanded(false); 
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  useEffect(() => {
-    if (query) setShowExpanded(false);
-    // Clear AI response when user starts typing a new query
-    if (query === '') setAiResponse('');
-  }, [query]);
 
   const filteredApps = coreApps.filter(app => 
     app.name.toLowerCase().includes(query.toLowerCase())
@@ -43,7 +39,6 @@ const TopSearch = ({ systemApps, onOpenApp }) => {
     }
     setQuery('');
     setIsFocused(false);
-    setShowExpanded(false);
     setAiResponse('');
   };
 
@@ -64,10 +59,10 @@ const TopSearch = ({ systemApps, onOpenApp }) => {
       if (res.ok) {
         setAiResponse(data.reply);
       } else {
-        setAiResponse(`[System Error]: ${data.error || 'Failed to connect to AI Core.'}`);
+        setAiResponse(`Error: ${data.error || 'Connection Failed.'}`);
       }
     } catch (error) {
-      setAiResponse("[Connection Error]: Backend server unreachable.");
+      setAiResponse("Error: Local subsystem unreachable.");
     }
     setIsAiLoading(false);
   };
@@ -83,214 +78,166 @@ const TopSearch = ({ systemApps, onOpenApp }) => {
   };
 
   return (
-    <div ref={searchRef} className="absolute top-6 left-1/2 transform -translate-x-1/2 z-[60] w-[750px] max-w-[95vw] transition-all duration-300">
-      
-      <div className={`relative flex items-center bg-space-dark bg-opacity-80 backdrop-blur-xl border rounded-full shadow-2xl px-5 py-3 transition-all z-20
-        ${isFocused ? 'border-thruster-glow shadow-[0_0_30px_rgba(79,195,247,0.2)]' : 'border-space-gray hover:border-gray-500'}`}
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`w-5 h-5 mr-3 ${isFocused ? 'text-thruster-glow' : 'text-gray-400'}`}>
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input 
-          type="text" 
-          placeholder="Search system modules, commands, or ask AI..." 
-          className="bg-transparent border-none outline-none text-space-white text-sm w-full font-sans placeholder-gray-500"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => setIsFocused(true)}
-          onKeyDown={handleKeyDown}
-        />
-        
-        {query && (
-          <div className="flex items-center gap-2">
-            {/* Ask AI Button in Input Bar */}
-            <button 
-              onClick={handleAskAI}
-              disabled={isAiLoading}
-              className="bg-thruster-blue/20 hover:bg-thruster-blue text-thruster-glow hover:text-black border border-thruster-glow/50 px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap"
-            >
-              {isAiLoading ? (
-                <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
-              ) : (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
-              )}
-              Ask AI
-            </button>
-            
-            {/* Clear Button */}
-            <button onClick={() => { setQuery(''); setAiResponse(''); }} className="text-gray-500 hover:text-white transition-colors bg-[#1a1a1a] p-1 rounded-full shrink-0">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
-        )}
-      </div>
+    <>
+      {/* 
+        In a 90s OS, the search isn't a persistent top bar. 
+        For UX convenience, we'll keep a small trigger button top-right on the desktop,
+        which opens the classic "Find" dialog.
+      */}
+      {!isFocused && (
+        <button 
+          onClick={() => setIsFocused(true)}
+          className="absolute top-4 right-4 retro-btn flex items-center gap-2 z-40 text-xs font-bold px-2 py-1"
+          title="Find: All Files"
+        >
+          <img src={findIcon} alt="" className="w-4 h-4" style={{ imageRendering: 'pixelated' }} />
+          Find...
+        </button>
+      )}
 
+      {/* --- CLASSIC "FIND" DIALOG --- */}
       {isFocused && (
-        <div className="absolute top-full left-0 w-full mt-4 animate-fade-in-up z-10 flex justify-center">
-            
-          {query ? (
-            <div className="w-full bg-[#121212] bg-opacity-95 backdrop-blur-2xl border border-space-gray rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col max-h-[60vh]">
+        <div className="absolute inset-0 z-[100] flex items-center justify-center pointer-events-none">
+          <div 
+            ref={searchRef} 
+            className="retro-window w-[450px] shadow-retro-outset bg-os-gray font-sans text-os-text pointer-events-auto"
+          >
+            {/* Title Bar */}
+            <div className="retro-title-bar select-none">
+              <div className="flex items-center gap-1">
+                <img src={findIcon} alt="" className="w-4 h-4" style={{ imageRendering: 'pixelated' }} />
+                <span>Find: All Files and Neural Nets</span>
+              </div>
+              <button onClick={() => { setIsFocused(false); setQuery(''); setAiResponse(''); }} className="retro-btn px-2 py-0 h-[18px] text-xs leading-none font-bold">
+                X
+              </button>
+            </div>
+
+            {/* Menu Bar */}
+            <div className="retro-menu-bar border-b border-os-dark-gray select-none">
+              <span className="retro-menu-item"><span className="underline">F</span>ile</span>
+              <span className="retro-menu-item"><span className="underline">E</span>dit</span>
+              <span className="retro-menu-item"><span className="underline">V</span>iew</span>
+              <span className="retro-menu-item"><span className="underline">O</span>ptions</span>
+              <span className="retro-menu-item"><span className="underline">H</span>elp</span>
+            </div>
+
+            <div className="p-3 flex flex-col gap-3">
               
-              {/* Search Results Area */}
-              {filteredApps.length > 0 && !aiResponse && !isAiLoading && (
-                <div className="p-2 shrink-0">
-                  <h4 className="text-[10px] text-gray-500 font-mono uppercase tracking-widest px-3 py-2">Local Modules</h4>
-                  <ul className="max-h-48 overflow-y-auto custom-scrollbar">
-                    {filteredApps.map(app => (
-                      <li key={app.id}>
-                        <button 
-                          onClick={() => handleOpen(app.id)}
-                          className="w-full flex items-center gap-4 px-4 py-3 hover:bg-space-gray rounded-xl transition-colors text-left group"
-                        >
-                          <div className="bg-[#1a1a1a] p-2 rounded-lg group-hover:bg-black transition-colors">
-                            <img src={app.icon} alt={app.name} className="w-6 h-6 object-contain group-hover:scale-110 transition-transform" />
-                          </div>
-                          <div>
-                            <div className="text-sm text-space-white font-bold">{app.name}</div>
-                            {app.tech_stack && <div className="text-xs text-gray-500 font-mono mt-0.5 truncate">{app.tech_stack}</div>}
-                          </div>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              {/* Tabs */}
+              <div className="flex gap-1 border-b border-os-white relative z-10 pl-2">
+                 <div className="bg-os-gray border border-os-white border-b-os-gray px-3 py-1 text-xs -mb-[1px] z-20">Name & Location</div>
+                 <div className="bg-os-gray border border-os-dark-gray px-3 py-1 text-xs -mb-[1px] opacity-70">Advanced</div>
+              </div>
 
-              {/* No Local Results Prompt (Redesigned with Ask AI Button) */}
-              {filteredApps.length === 0 && !aiResponse && !isAiLoading && (
-                <div className="p-8 text-center flex flex-col items-center justify-center shrink-0">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="w-12 h-12 text-thruster-glow mb-4 opacity-50 drop-shadow-[0_0_15px_rgba(79,195,247,0.5)]">
-                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                  </svg>
-                  <span className="text-sm text-gray-300 font-sans font-bold mb-1">No local modules match "{query}".</span>
-                  <span className="text-xs text-gray-500 font-mono mb-6">Ask Luma! Try: "Who is Vishal Sinha?"</span>
-                  
-                  <button 
-                    onClick={handleAskAI}
-                    className="bg-thruster-blue/10 hover:bg-thruster-blue text-thruster-glow hover:text-black border border-thruster-glow/50 px-6 py-2.5 rounded-full text-sm font-bold transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(79,195,247,0.2)] hover:shadow-[0_0_25px_rgba(79,195,247,0.6)]"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
-                    Send to AI Core
-                  </button>
+              {/* Search Inputs Area */}
+              <div className="bg-os-gray border border-os-white shadow-retro-outset p-3">
+                <div className="flex items-center gap-4 mb-2">
+                  <span className="text-xs w-16">Named:</span>
+                  <input 
+                    type="text" 
+                    className="retro-input flex-1" 
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    autoFocus
+                  />
                 </div>
-              )}
+                <div className="flex items-center gap-4">
+                  <span className="text-xs w-16">Look in:</span>
+                  <select className="retro-input flex-1 py-[1px]">
+                    <option>C:\VISHAL\System</option>
+                    <option>D:\Projects</option>
+                    <option>Neural Net (Luma AI)</option>
+                  </select>
+                </div>
+              </div>
 
-              {/* AI Terminal Area (with Skeleton Loader) */}
-              {(aiResponse || isAiLoading) && (
-                <div className="p-4 border-t border-gray-800 bg-black/40 flex-1 overflow-hidden flex flex-col">
-                  <div className="flex items-center gap-2 mb-3 shrink-0">
-                    <div className="w-2 h-2 rounded-full bg-thruster-glow shadow-[0_0_8px_rgba(79,195,247,0.8)] animate-pulse"></div>
-                    <span className="text-[10px] font-mono text-thruster-glow uppercase tracking-widest">MarkAI Telemetry Link Active</span>
-                  </div>
-                  
-                  <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-5 font-mono text-sm text-gray-300 leading-relaxed overflow-y-auto custom-scrollbar flex-1 shadow-inner">
-                    {isAiLoading ? (
-                      /* Sleek Skeleton Loader */
-                      <div className="flex flex-col gap-3 animate-pulse pt-1">
-                        <div className="h-3 bg-gray-800 rounded w-1/4 mb-2"></div>
-                        <div className="h-3 bg-[#1a1a1a] rounded w-full"></div>
-                        <div className="h-3 bg-[#1a1a1a] rounded w-5/6"></div>
-                        <div className="h-3 bg-[#1a1a1a] rounded w-4/6"></div>
-                        <div className="h-3 bg-[#1a1a1a] rounded w-11/12 mt-2"></div>
-                      </div>
-                    ) : (
-                      /* Actual AI Response */
-                      <div className="whitespace-pre-wrap">{aiResponse}</div>
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-2">
+                <button 
+                  onClick={handleAskAI}
+                  disabled={isAiLoading || !query.trim()}
+                  className="retro-btn text-xs w-24 flex items-center justify-center gap-1 font-bold"
+                >
+                  <img src={aiIcon} alt="" className="w-3 h-3" style={{ imageRendering: 'pixelated' }} />
+                  Ask AI
+                </button>
+                <button onClick={() => { setQuery(''); setAiResponse(''); }} className="retro-btn text-xs w-24">
+                  New Search
+                </button>
+              </div>
+
+              {/* Results Area */}
+              {query && (
+                <div className="mt-2 flex flex-col gap-1">
+                  <span className="text-xs">Search Results:</span>
+                  <div className="bg-os-white shadow-retro-inset border border-os-dark-gray h-40 overflow-y-auto p-1 custom-scrollbar">
+                    
+                    {/* 1. Local Module Results */}
+                    {filteredApps.length > 0 && !aiResponse && !isAiLoading && (
+                      <ul className="flex flex-col">
+                        {filteredApps.map(app => (
+                          <li key={app.id}>
+                            <button 
+                              onClick={() => handleOpen(app.id)}
+                              className="w-full flex items-center gap-2 px-2 py-1 hover:bg-os-navy hover:text-os-white text-xs text-left outline-none"
+                            >
+                              <img src={app.icon} alt="" className="w-4 h-4 object-contain" style={{ imageRendering: 'pixelated' }} />
+                              <div className="flex flex-col">
+                                <span>{app.name}.exe</span>
+                                {app.tech_stack && <span className="text-[10px] opacity-70 truncate">{app.tech_stack}</span>}
+                              </div>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
                     )}
+
+                    {/* 2. No Local Results Prompt */}
+                    {filteredApps.length === 0 && !aiResponse && !isAiLoading && (
+                      <div className="p-4 text-center flex flex-col items-center justify-center opacity-70">
+                        <span className="text-xs mb-1">0 file(s) found.</span>
+                        <span className="text-[10px]">Click 'Ask AI' to search the remote neural net.</span>
+                      </div>
+                    )}
+
+                    {/* 3. AI Terminal Area (Replaces skeleton loader with classic text loading) */}
+                    {(aiResponse || isAiLoading) && (
+                      <div className="p-2 h-full flex flex-col font-sans">
+                        <div className="flex items-center gap-2 mb-2 pb-1 border-b border-os-gray border-dotted">
+                          <img src={aiIcon} alt="" className="w-3 h-3" style={{ imageRendering: 'pixelated' }} />
+                          <span className="text-[10px] font-bold">LUMA AI LINK ESTABLISHED</span>
+                        </div>
+                        
+                        <div className="text-xs leading-relaxed">
+                          {isAiLoading ? (
+                            <span className="animate-pulse">Processing query...</span>
+                          ) : (
+                            <div className="whitespace-pre-wrap">{aiResponse}</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                   </div>
                 </div>
               )}
 
             </div>
-          ) : showExpanded ? (
-            <CommandCenter 
-              systemApps={coreApps} 
-              onOpenApp={handleOpen} 
-              onClose={() => setShowExpanded(false)} 
-            />
-          ) : (
-            <div className="flex flex-row items-end gap-4 px-6 py-4 bg-[#1a1a1a] bg-opacity-60 rounded-2xl border border-gray-700 backdrop-blur-md shadow-inner overflow-x-auto custom-scrollbar">
-              
-              {coreApps.filter(app => app.id !== 'settings').map(app => (
-                <div key={app.id} className="relative group flex flex-col items-center">
-                  <span className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#0a0a0a] border border-gray-600 text-space-white text-[11px] px-3 py-1.5 rounded-md whitespace-nowrap shadow-lg pointer-events-none z-50 font-sans tracking-wide">
-                    {app.name}
-                  </span>
-                  <button 
-                    onClick={() => handleOpen(app.id)}
-                    className="w-12 h-12 transition-all duration-300 ease-out origin-bottom hover:scale-[1.5] hover:-translate-y-2 focus:outline-none"
-                  >
-                    <img src={app.icon} alt={app.name} className="w-full h-full object-contain drop-shadow-xl" />
-                  </button>
-                </div>
-              ))}
-
-              <div className="relative group flex flex-col items-center">
-                <span className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#0a0a0a] border border-gray-600 text-space-white text-[11px] px-3 py-1.5 rounded-md whitespace-nowrap shadow-lg pointer-events-none z-50 font-sans tracking-wide">
-                  Terminal
-                </span>
-                <button 
-                  onClick={() => handleOpen('terminal')}
-                  className="w-12 h-12 transition-all duration-300 ease-out origin-bottom hover:scale-[1.5] hover:-translate-y-2 focus:outline-none"
-                >
-                  <div className="w-full h-full flex items-center justify-center bg-[#1a1a1a] border border-gray-700 rounded-xl drop-shadow-xl text-thruster-glow">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
-                  </div>
-                </button>
+            
+            {/* Status Bar */}
+            <div className="retro-status-bar mt-0 border-t border-os-dark-gray shadow-none">
+              <span>{filteredApps.length} object(s) found</span>
+              <div className="flex gap-4">
+                <span className="border-l border-os-dark-gray pl-2">{isAiLoading ? 'Connecting...' : 'Ready'}</span>
               </div>
-
-              <div className="relative group flex flex-col items-center">
-                <span className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#0a0a0a] border border-gray-600 text-space-white text-[11px] px-3 py-1.5 rounded-md whitespace-nowrap shadow-lg pointer-events-none z-50 font-sans tracking-wide">
-                  Settings
-                </span>
-                <button 
-                  onClick={() => handleOpen('settings')}
-                  className="w-12 h-12 transition-all duration-300 ease-out origin-bottom hover:scale-[1.5] hover:-translate-y-2 focus:outline-none"
-                >
-                  <div className="w-full h-full flex items-center justify-center bg-[#1a1a1a] border border-gray-700 rounded-xl drop-shadow-xl text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 0 1 1.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.559.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.894.149c-.424.07-.764.383-.929.78-.165.398-.143.854.107 1.204l.528.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 0 1-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.398.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 0 1-.12-1.45l.527-.737c.25-.35.272-.806.108-1.204-.165-.397-.506-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.108-1.204l-.526-.738a1.125 1.125 0 0 1 .12-1.45l.773-.773a1.125 1.125 0 0 1 1.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894Z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                    </svg>
-                  </div>
-                </button>
-              </div>
-
-              <div className="w-px h-10 bg-gray-700 mx-2 self-center"></div>
-
-              <div className="relative group flex flex-col items-center">
-                <span className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#0a0a0a] border border-gray-600 text-space-white text-[11px] px-3 py-1.5 rounded-md whitespace-nowrap shadow-lg pointer-events-none z-50 font-sans tracking-wide">
-                  All Apps
-                </span>
-                <button 
-                  onClick={() => setShowExpanded(true)}
-                  className="w-12 h-12 transition-all duration-300 ease-out origin-bottom hover:scale-[1.5] hover:-translate-y-2 focus:outline-none"
-                >
-                  <div className="w-full h-full flex items-center justify-center bg-[#1a1a1a] border border-gray-700 rounded-xl drop-shadow-xl group-hover:border-thruster-glow transition-colors">
-                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-gray-400 group-hover:text-thruster-glow transition-colors">
-                      <rect x="3" y="3" width="4" height="4" rx="1" />
-                      <rect x="10" y="3" width="4" height="4" rx="1" />
-                      <rect x="17" y="3" width="4" height="4" rx="1" />
-                      <rect x="3" y="10" width="4" height="4" rx="1" />
-                      <rect x="10" y="10" width="4" height="4" rx="1" />
-                      <rect x="17" y="10" width="4" height="4" rx="1" />
-                      <rect x="3" y="17" width="4" height="4" rx="1" />
-                      <rect x="10" y="17" width="4" height="4" rx="1" />
-                      <rect x="17" y="17" width="4" height="4" rx="1" />
-                    </svg>
-                  </div>
-                </button>
-              </div>
-
             </div>
-          )}
+
+          </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

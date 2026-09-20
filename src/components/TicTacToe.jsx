@@ -22,9 +22,7 @@ const TicTacToe = () => {
     return null;
   };
 
-  // Handle Player click
   const handleClick = (index) => {
-    // Prevent move if cell is taken, game is over, or it's the computer's turn
     if (board[index] || winnerData || !xIsNext) return;
 
     const newBoard = [...board];
@@ -33,18 +31,15 @@ const TicTacToe = () => {
     setXIsNext(false);
   };
 
-  // Handle Computer Move & Win Condition Checking
   useEffect(() => {
     const currentWinner = calculateWinner(board);
     
-    // Check for win/draw after every move
     if (currentWinner) {
       setWinnerData(currentWinner);
       setShowModal(true);
       return;
     }
 
-    // Trigger Computer's turn
     if (!xIsNext) {
       const timer = setTimeout(() => {
         const emptyIndices = board
@@ -54,11 +49,11 @@ const TicTacToe = () => {
         if (emptyIndices.length > 0) {
           const randomIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
           const newBoard = [...board];
-          newBoard[randomIndex] = 'O'; // Computer places 'O'
+          newBoard[randomIndex] = 'O'; 
           setBoard(newBoard);
-          setXIsNext(true); // Pass turn back to Player
+          setXIsNext(true); 
         }
-      }, 600); // 600ms delay to simulate "thinking"
+      }, 500); 
 
       return () => clearTimeout(timer);
     }
@@ -72,75 +67,92 @@ const TicTacToe = () => {
   };
 
   return (
-    <div className="h-full w-full bg-[#050505] flex flex-col items-center justify-center p-8 overflow-hidden relative shadow-[inset_0_0_50px_rgba(0,0,0,0.8)]">
+    <div className="h-full w-full bg-os-teal flex items-center justify-center p-4 select-none font-sans">
       
-      <div className="max-w-md w-full bg-[#0a0a0a] border border-gray-800 rounded-3xl p-8 shadow-2xl flex flex-col items-center relative z-10">
-        <h2 className="text-3xl font-bold text-white tracking-widest uppercase mb-2">Tic Tac Toe</h2>
-        <p className="text-sm font-mono mb-8 h-5 flex items-center justify-center">
-          <span className="text-gray-500">
-            {xIsNext ? 'Awaiting Input: Commander ' : 'System AI is thinking '} 
-            <span className={xIsNext ? 'text-thruster-glow' : 'text-green-400'}>
-              {xIsNext ? 'X' : 'O'}
-            </span>
-            {!xIsNext && <span className="animate-pulse">...</span>}
-          </span>
-        </p>
-
-        <div className="grid grid-cols-3 gap-3 mb-10 w-full max-w-[300px]">
-          {board.map((cell, index) => (
-            <button
-              key={index}
-              onClick={() => handleClick(index)}
-              className={`aspect-square rounded-xl border-2 flex items-center justify-center text-5xl sm:text-6xl font-bold transition-all duration-300 focus:outline-none
-                ${
-                !cell && !winnerData && xIsNext ? 'border-gray-800 bg-[#121212] hover:border-gray-500 hover:bg-[#1a1a1a] cursor-pointer' :
-                !cell && (!xIsNext || winnerData) ? 'border-gray-800 bg-[#121212] cursor-not-allowed' :
-                cell === 'X' ? 'border-thruster-glow bg-thruster-blue/10 text-thruster-glow shadow-[0_0_15px_rgba(79,195,247,0.3)] cursor-default' :
-                cell === 'O' ? 'border-green-400 bg-green-500/10 text-green-400 shadow-[0_0_15px_rgba(74,222,128,0.3)] cursor-default' :
-                ''
-              }`}
-              disabled={cell !== null || winnerData !== null || !xIsNext}
-            >
-              {cell}
-            </button>
-          ))}
+      {/* Classic Window Container for the Game */}
+      <div className="retro-window w-full max-w-[320px] shadow-retro-outset bg-os-gray">
+        
+        {/* Internal Menubar */}
+        <div className="flex items-center gap-4 px-2 py-1 text-xs border-b border-os-dark-gray shadow-[0_1px_0_#ffffff]">
+          <span className="hover:bg-os-navy hover:text-os-white px-1 cursor-default"><span className="underline">G</span>ame</span>
+          <span className="hover:bg-os-navy hover:text-os-white px-1 cursor-default"><span className="underline">H</span>elp</span>
         </div>
 
-        <button
-          onClick={resetGame}
-          className="bg-[#1a1a1a] hover:bg-space-gray border border-gray-700 hover:border-white px-8 py-3 rounded-full text-white font-bold tracking-widest uppercase text-sm transition-all shadow-lg flex items-center gap-3"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-          Reset Board
-        </button>
+        {/* Game Area */}
+        <div className="p-4 flex flex-col items-center">
+          
+          {/* Status Display */}
+          <div className="w-full bg-os-white shadow-retro-inset border border-os-dark-gray p-2 mb-4 text-center text-xs font-bold text-os-text h-8 flex items-center justify-center">
+            {winnerData 
+              ? 'Game Over' 
+              : xIsNext 
+                ? 'Your turn (X)' 
+                : 'Computer thinking...'}
+          </div>
+
+          {/* Classic Mechanical Grid */}
+          <div className="grid grid-cols-3 gap-0 bg-os-gray border border-os-dark-gray p-1 mb-4 shadow-retro-inset">
+            {board.map((cell, index) => (
+              <button
+                key={index}
+                onClick={() => handleClick(index)}
+                disabled={cell !== null || winnerData !== null || !xIsNext}
+                className={`w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center text-4xl font-bold font-sans outline-none
+                  ${!cell && !winnerData && xIsNext 
+                    ? 'retro-btn hover:shadow-retro-inset active:shadow-retro-inset active:pt-[2px] active:pl-[2px]' 
+                    : 'retro-btn shadow-retro-outset bg-os-gray'
+                  }
+                  ${cell ? 'shadow-retro-inset bg-os-white' : ''}
+                `}
+              >
+                <span className={cell === 'X' ? 'text-black' : cell === 'O' ? 'text-os-navy' : ''}>
+                  {cell}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Reset Action */}
+          <button onClick={resetGame} className="retro-btn text-xs font-bold w-full py-1">
+            New Game
+          </button>
+        </div>
       </div>
 
-      {/* Winner Pop-up Modal */}
+      {/* --- CLASSIC SYSTEM DIALOG FOR GAME OVER --- */}
       {showModal && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in-up">
-          <div className="bg-[#121212] border border-gray-700 p-8 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] text-center flex flex-col items-center w-[90%] max-w-sm">
+        <div className="absolute inset-0 z-[100] flex items-center justify-center pointer-events-none">
+          {/* Mock blocking overlay to prevent clicking behind */}
+          <div className="absolute inset-0 pointer-events-auto"></div>
+          
+          <div className="retro-window w-64 shadow-retro-outset bg-os-gray font-sans text-os-text pointer-events-auto border border-os-dark-gray">
             
-            <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-5 border-2 shadow-lg text-4xl font-bold
-              ${winnerData === 'X' ? 'bg-thruster-blue/20 border-thruster-glow text-thruster-glow' : 
-                winnerData === 'O' ? 'bg-green-500/20 border-green-400 text-green-400' : 
-                'bg-yellow-500/20 border-yellow-400 text-yellow-400'}`}>
-                {winnerData === 'Draw' ? '!' : winnerData}
+            <div className="retro-title-bar">
+              <span>Tic Tac Toe</span>
+              <button onClick={resetGame} className="retro-btn px-2 py-0 h-[18px] text-xs leading-none font-bold">X</button>
             </div>
             
-            <h3 className="text-2xl font-bold text-white mb-2 uppercase tracking-widest">
-              {winnerData === 'Draw' ? 'Stalemate' : winnerData === 'X' ? 'Victory Achieved' : 'System Defeated'}
-            </h3>
+            <div className="p-4 flex items-start gap-4">
+              <span className="text-3xl leading-none">
+                {winnerData === 'Draw' ? 'ℹ️' : winnerData === 'X' ? '🏆' : '⚠️'}
+              </span>
+              <div className="flex flex-col text-xs mt-1">
+                <span className="font-bold mb-2">
+                  {winnerData === 'Draw' ? 'The game is a draw.' : winnerData === 'X' ? 'You won!' : 'The computer won.'}
+                </span>
+                <span>Play again?</span>
+              </div>
+            </div>
+
+            <div className="flex justify-center gap-2 p-3 bg-os-gray border-t border-os-dark-gray shadow-retro-inset">
+              <button onClick={resetGame} className="retro-btn text-xs w-20 font-bold focus:shadow-retro-inset">
+                Yes
+              </button>
+              <button onClick={resetGame} className="retro-btn text-xs w-20">
+                No
+              </button>
+            </div>
             
-            <p className="text-gray-400 font-mono text-sm mb-8">
-              {winnerData === 'Draw' ? 'No valid moves remain.' : winnerData === 'X' ? 'Commander has defeated the AI.' : 'The AI opponent proved superior.'}
-            </p>
-            
-            <button
-              onClick={resetGame}
-              className="w-full bg-[#1a1a1a] hover:bg-space-gray border border-gray-600 hover:border-white py-3 rounded-lg text-white font-bold tracking-widest uppercase text-sm transition-all shadow-md focus:outline-none"
-            >
-              Acknowledge & Restart
-            </button>
           </div>
         </div>
       )}

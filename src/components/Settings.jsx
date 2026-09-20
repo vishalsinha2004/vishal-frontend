@@ -4,6 +4,8 @@ const Settings = ({ bgTheme, setBgTheme, accentColor, setAccentColor, isCrtMode,
   const [activeModule, setActiveModule] = useState(null);
 
   // --- Retro Icons (Base64 SVG or placeholder representations) ---
+  const settingsIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='24' height='24' fill='%23c0c0c0' stroke='%23000' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23808080' stroke='%23000' stroke-width='2'/%3E%3Crect x='14' y='8' width='4' height='16' fill='%23000'/%3E%3Crect x='8' y='14' width='16' height='4' fill='%23000'/%3E%3C/svg%3E";
+
   const displayIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='6' width='24' height='18' fill='%23008080' stroke='%23000' stroke-width='2'/%3E%3Crect x='12' y='24' width='8' height='4' fill='%23c0c0c0' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E";
   
   const systemIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='8' y='4' width='16' height='24' fill='%23c0c0c0' stroke='%23000' stroke-width='2'/%3E%3Crect x='10' y='6' width='12' height='6' fill='%23000'/%3E%3Ccircle cx='16' cy='22' r='2' fill='%23ff0000'/%3E%3C/svg%3E";
@@ -23,7 +25,7 @@ const Settings = ({ bgTheme, setBgTheme, accentColor, setAccentColor, isCrtMode,
       <div className="bg-os-gray border-b border-os-dark-gray p-1 flex items-center gap-2 text-xs">
         <span className="text-os-dark-gray px-1">Address</span>
         <div className="flex-1 bg-os-white shadow-retro-inset px-2 py-[2px] flex items-center">
-          <img src={settingsIcon} alt="" className="w-3 h-3 mr-1" />
+          <img src={settingsIcon} alt="" className="w-3 h-3 mr-1" style={{ imageRendering: 'pixelated' }} />
           Control Panel
         </div>
       </div>
@@ -112,7 +114,7 @@ const Settings = ({ bgTheme, setBgTheme, accentColor, setAccentColor, isCrtMode,
                    onChange={(e) => setIsCrtMode(e.target.checked)}
                    className="shadow-retro-inset"
                  />
-                 <label htmlFor="crt-mode" className="text-xs">Enable CRT Display Emulation (Requires Restart)</label>
+                 <label htmlFor="crt-mode" className="text-xs">Enable CRT Display Emulation</label>
               </div>
 
             </div>

@@ -216,6 +216,7 @@ function App() {
       )}
 
       {/* --- STATE 3: MAIN DESKTOP ENVIRONMENT --- */}
+      {/* --- STATE 3: MAIN DESKTOP ENVIRONMENT --- */}
       {bootState === 3 && (
         <>
           <Desktop 
@@ -254,8 +255,11 @@ function App() {
             </div>
           )}
 
-          {/* Voice Assistant - Hidden or adapted for retro look later */}
-          <VoiceAssistant />
+          {/* --- ADD THIS LINE HERE --- */}
+          <TopSearch systemApps={systemApps} onOpenApp={openApp} />
+
+          {/* Voice Assistant */}
+          {/* <VoiceAssistant /> */}
 
           <Taskbar
             openApps={openApps}

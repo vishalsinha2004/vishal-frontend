@@ -9,28 +9,24 @@ const VoiceAssistant = () => {
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
-  // --- NEW: Load voices when the component mounts ---
   useEffect(() => {
     const loadVoices = () => {
       setAvailableVoices(window.speechSynthesis.getVoices());
     };
     
-    // Initial load
     loadVoices();
     
-    // Chrome loads voices asynchronously, so we must listen for this event
     if (window.speechSynthesis.onvoiceschanged !== undefined) {
       window.speechSynthesis.onvoiceschanged = loadVoices;
     }
   }, []);
 
   const handleMicClick = () => {
-    // Prevent starting if already listening or waiting for AI
     if (isListening || isProcessing) return;
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      setTranscript("Browser does not support voice recognition.");
+      setTranscript("ERR: Speech Recognition API not supported.");
       return;
     }
 
@@ -41,22 +37,22 @@ const VoiceAssistant = () => {
 
     recognition.onstart = () => {
       setIsListening(true);
-      setTranscript('Listening...');
+      setTranscript('Listening for audio input...');
       setEmotion('NEUTRAL');
-      window.speechSynthesis.cancel(); // Stop any ongoing speech
+      window.speechSynthesis.cancel();
     };
 
     recognition.onresult = async (event) => {
       const text = event.results[0][0].transcript;
       setIsListening(false);
-      setTranscript(`You: ${text}`);
+      setTranscript(`USR> ${text}`);
       await processVoiceCommand(text);
     };
 
     recognition.onerror = (event) => {
       console.error("Speech error", event.error);
       setIsListening(false);
-      setTranscript('Microphone error or no speech detected.');
+      setTranscript('ERR: No speech detected or mic failure.');
     };
 
     recognition.onend = () => {
@@ -68,7 +64,7 @@ const VoiceAssistant = () => {
 
   const processVoiceCommand = async (text) => {
     setIsProcessing(true);
-    setTranscript('Luma is thinking...');
+    setTranscript('SYS> Processing natural language query...');
     
     try {
       const res = await fetch(`${API_BASE_URL}/voice-assistant/`, {
@@ -81,10 +77,10 @@ const VoiceAssistant = () => {
       if (res.ok) {
         speakResponse(data.reply);
       } else {
-        speakResponse("[SAD] I encountered a system error.");
+        speakResponse("[SAD] Subsystem error occurred.");
       }
     } catch (error) {
-      speakResponse("[SAD] I cannot reach the server right now.");
+      speakResponse("[SAD] Cannot connect to central AI core.");
     }
     setIsProcessing(false);
   };
@@ -100,28 +96,24 @@ const VoiceAssistant = () => {
     }
 
     setEmotion(currentEmotion);
-    setTranscript(cleanText);
+    setTranscript(`AI> ${cleanText}`);
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
     
-    // --- NEW: Female Voice Selection Logic ---
     if (availableVoices.length > 0) {
-      // Find the best available female voice based on OS/Browser
       const femaleVoice = availableVoices.find(voice => 
-        voice.name.includes('Zira') ||                  // Windows US Female
-        voice.name.includes('Neerja') ||                // Windows Indian Female
-        voice.name.includes('Samantha') ||              // Mac US Female
-        voice.name.includes('Victoria') ||              // Mac UK Female
-        voice.name.includes('Google UK English Female') // Chrome Default Female
+        voice.name.includes('Zira') ||                  
+        voice.name.includes('Neerja') ||                
+        voice.name.includes('Samantha') ||              
+        voice.name.includes('Victoria') ||              
+        voice.name.includes('Google UK English Female') 
       );
 
-      // If a match is found, use it. Otherwise, it defaults to the system standard.
       if (femaleVoice) {
         utterance.voice = femaleVoice;
       }
     }
     
-    // Apply emotional tweaks to pitch and rate
     if (currentEmotion === 'HAPPY' || currentEmotion === 'EXCITED') {
       utterance.pitch = 1.2;
       utterance.rate = 1.1;
@@ -139,62 +131,65 @@ const VoiceAssistant = () => {
     window.speechSynthesis.speak(utterance);
   };
 
-  const getEmotionColor = () => {
+  // Convert modern glow colors to harsh 90s LED indicator colors
+  const getRetroEmotionColor = () => {
     switch(emotion) {
-      case 'HAPPY': case 'EXCITED': return 'shadow-[0_0_20px_rgba(74,222,128,0.4)]'; 
-      case 'ANGRY': case 'FRUSTRATED': return 'shadow-[0_0_20px_rgba(239,68,68,0.4)]'; 
-      case 'SAD': case 'EMPATHETIC': return 'shadow-[0_0_20px_rgba(168,85,247,0.4)]'; 
-      default: return 'shadow-[0_0_20px_rgba(79,195,247,0.2)]'; 
+      case 'HAPPY': case 'EXCITED': return 'bg-[#00ff00] shadow-[0_0_5px_#00ff00]'; 
+      case 'ANGRY': case 'FRUSTRATED': return 'bg-[#ff0000] shadow-[0_0_5px_#ff0000]'; 
+      case 'SAD': case 'EMPATHETIC': return 'bg-[#ff00ff] shadow-[0_0_5px_#ff00ff]'; 
+      default: return 'bg-[#ffff00]'; // Yellow for idle/neutral active
     }
   };
 
   return (
-    <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-[80] flex flex-col items-center">
+    <div className="absolute bottom-12 right-4 z-[80] flex flex-col items-end select-none">
       
-      {/* Floating Transcript Text */}
-      {(transcript && !isListening) && (
-        <div className="mb-4 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-gray-800 text-sm font-mono text-gray-300 max-w-sm text-center shadow-lg animate-fade-in-up">
-          {transcript}
-        </div>
-      )}
-
-      {/* Main Voice Widget */}
-      <div className={`bg-[#1e1e1e] border border-gray-700 rounded-2xl w-56 p-4 flex flex-col items-center shadow-2xl transition-all duration-300 ${getEmotionColor()}`}>
+      {/* Main Voice Utility Window */}
+      <div className="retro-window w-64 bg-os-gray font-sans text-os-text shadow-retro-outset">
         
-        {/* Top Handle bar */}
-        <div className="w-8 h-1 bg-gray-600 rounded-full mb-4"></div>
+        {/* Title Bar */}
+        <div className="retro-title-bar cursor-default">
+          <div className="flex items-center gap-1">
+            <span className="text-[10px]">🎙️</span>
+            <span>Luma AI Link</span>
+          </div>
+          <button className="retro-btn px-2 py-0 h-[18px] text-xs leading-none font-bold">X</button>
+        </div>
 
-        {/* Controls Row */}
-        <div className="w-full flex justify-between items-center px-2">
+        <div className="p-2 border-t border-os-white">
           
-          <button className="text-gray-400 hover:text-white transition-colors">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-          </button>
+          {/* Status Display Area */}
+          <div className="flex items-center justify-between mb-2 px-1">
+            <div className="flex items-center gap-2">
+               {/* Hardware LED Emotion Indicator */}
+               <div className={`w-3 h-3 border border-os-dark-gray shadow-retro-inset ${!isListening && !isProcessing && transcript === '' ? 'bg-black' : getRetroEmotionColor()}`}></div>
+               <span className="text-[10px] font-bold uppercase tracking-wider">
+                 {isListening ? 'Awaiting Audio...' : isProcessing ? 'Computing...' : 'System Idle'}
+               </span>
+            </div>
+          </div>
 
-          <button 
-            onClick={handleMicClick}
-            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-              isListening 
-                ? 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.8)] animate-pulse text-white' 
-                : isProcessing
-                ? 'bg-thruster-blue shadow-[0_0_15px_rgba(79,195,247,0.5)] text-black animate-spin'
-                : 'bg-[#2a2a2a] hover:bg-[#3a3a3a] text-gray-300'
-            }`}
-          >
-            {isProcessing ? (
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><circle cx="12" cy="12" r="10" strokeDasharray="16"></circle></svg>
-            ) : (
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-                 <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
-                 <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                 <line x1="12" y1="19" x2="12" y2="22"></line>
-               </svg>
-            )}
-          </button>
+          {/* Terminal Transcript Box */}
+          <div className="bg-os-white shadow-retro-inset border border-os-dark-gray h-20 p-2 mb-3 overflow-y-auto text-xs font-mono text-os-text custom-scrollbar break-words">
+            {transcript || "Ready. Click 'Record' to issue a voice command."}
+          </div>
 
-          <button className="text-gray-400 hover:text-white transition-colors">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-          </button>
+          {/* Action Buttons */}
+          <div className="flex gap-1 justify-between">
+            
+            <button 
+              onClick={handleMicClick}
+              disabled={isListening || isProcessing}
+              className={`retro-btn flex-1 flex items-center justify-center gap-1 text-xs font-bold ${isListening ? 'shadow-retro-inset bg-os-dark-gray text-os-white' : ''}`}
+            >
+              <div className={`w-2 h-2 rounded-full ${isListening ? 'bg-[#ff0000] shadow-[0_0_5px_#ff0000]' : 'bg-[#800000]'}`}></div>
+              {isListening ? 'Recording' : 'Record'}
+            </button>
+            
+            <button className="retro-btn px-3 text-xs" title="Settings">⚙️</button>
+            <button className="retro-btn px-3 text-xs font-bold" title="Help">?</button>
+            
+          </div>
 
         </div>
       </div>
