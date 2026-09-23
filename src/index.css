@@ -1,110 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 @import "tailwindcss";
 
+/* --- ADD THIS THEME BLOCK FOR TAILWIND V4 --- */
 @theme {
-  /* Classic Windows 95/98 Palette */
   --color-os-teal: #008080;
   --color-os-gray: #c0c0c0;
   --color-os-dark-gray: #808080;
   --color-os-navy: #000080;
-  --color-os-text: #000000;
   --color-os-white: #ffffff;
-  --color-os-black: #000000;
+  --color-os-text: #000000;
 
-  /* 90s system fonts priority */
-  --font-sans: Tahoma, "MS Sans Serif", Arial, sans-serif;
-  --font-mono: "Courier New", Courier, monospace;
-
-  /* Classic 1px bevels */
-  --shadow-retro-outset: inset 1px 1px #ffffff, inset -1px -1px #000000, inset 2px 2px #dfdfdf, inset -2px -2px #808080;
-  --shadow-retro-inset: inset 1px 1px #000000, inset -1px -1px #ffffff, inset 2px 2px #808080, inset -2px -2px #dfdfdf;
+  --shadow-retro-outset: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px grey, inset 2px 2px #dfdfdf;
+  --shadow-retro-inset: inset -1px -1px #fff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf, inset 2px 2px grey;
 }
 
-@layer base {
-  body {
-    @apply bg-os-teal text-os-text font-sans antialiased;
-    /* Prevent bouncy scrolling on the desktop */
-    overflow: hidden; 
-    margin: 0;
-    padding: 0;
-    /* Disable modern tap highlights on mobile */
-    -webkit-tap-highlight-color: transparent; 
-  }
-
-  /* Custom retro scrollbar */
-  ::-webkit-scrollbar {
-    width: 16px;
-    height: 16px;
-    background: var(--color-os-gray);
-  }
-  ::-webkit-scrollbar-button:single-button {
-    background-color: var(--color-os-gray);
-    display: block;
-    height: 16px;
-    width: 16px;
-    box-shadow: var(--shadow-retro-outset);
-  }
-  ::-webkit-scrollbar-thumb {
-    background-color: var(--color-os-gray);
-    box-shadow: var(--shadow-retro-outset);
-  }
-  ::-webkit-scrollbar-thumb:active {
-    background-color: var(--color-os-dark-gray);
-  }
+:root {
+  --font-system: 'MS Sans Serif', 'Microsoft Sans Serif', Tahoma, Arial, sans-serif;
+  --font-terminal: 'Courier New', Courier, monospace;
+  --font-pixel: 'VT323', monospace;
+  --font-dialog: Tahoma, 'MS Sans Serif', Arial, sans-serif;
 }
 
-@layer components {
-  /* Reusable Retro UI Elements */
-  
-  .retro-window {
-    @apply bg-os-gray shadow-retro-outset p-[2px] flex flex-col;
-  }
-
-  .retro-title-bar {
-    @apply bg-os-navy text-os-white font-bold text-sm px-1 py-[2px] flex justify-between items-center;
-  }
-
-  .retro-title-bar-inactive {
-    @apply bg-os-dark-gray text-os-gray font-bold text-sm px-1 py-[2px] flex justify-between items-center;
-  }
-
-  .retro-btn {
-    @apply bg-os-gray text-os-text text-sm shadow-retro-outset px-3 py-1 flex items-center justify-center focus:outline-none focus:ring-1 focus:ring-black focus:ring-offset-0;
-  }
-
-  .retro-btn:active, .retro-btn-active {
-    @apply shadow-retro-inset pt-[5px] pb-[3px] pl-[13px] pr-[11px]; /* Shift text down/right to simulate mechanical press */
-  }
-
-  .retro-input {
-    @apply bg-os-white text-os-text shadow-retro-inset px-2 py-1 outline-none focus:bg-white text-sm;
-  }
-
-  .retro-panel-inset {
-    @apply bg-os-white shadow-retro-inset p-1;
-  }
-
-  .retro-menu-bar {
-    @apply bg-os-gray text-os-text text-sm flex gap-2 px-2 py-1;
-  }
-
-  .retro-menu-item {
-    @apply px-2 py-0.5 hover:bg-os-navy hover:text-os-white cursor-default;
-  }
-
-  .retro-status-bar {
-    @apply bg-os-gray shadow-retro-inset mt-1 px-2 py-0.5 text-xs text-os-text flex justify-between;
-  }
+html,
+body {
+  font-family: var(--font-system);
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: crispEdges;
 }
 
-/* Optional CRT Overlay (Can be toggled via state later) */
+.font-system {
+  font-family: var(--font-system);
+}
+
+.font-terminal {
+  font-family: var(--font-terminal);
+}
+
+.font-pixel {
+  font-family: var(--font-pixel);
+}
+
+.font-dialog {
+  font-family: var(--font-dialog);
+}
+
+/* --- CRT DISPLAY EFFECTS --- */
 .crt-overlay {
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
-  background-size: 100% 4px;
-  pointer-events: none;
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 9999;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 10001;
+  /* Horizontal scanlines & Vertical RGB phosphor separation */
+  background: 
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+    linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  background-size: 100% 4px, 6px 100%;
+  /* Screen edge vignette */
+  box-shadow: inset 0 0 100px rgba(0,0,0,0.6);
+}
+
+/* Subtle flicker animation (disabled for users preferring reduced motion) */
+@media (prefers-reduced-motion: no-preference) {
+  .crt-overlay::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255, 255, 255, 0.02);
+    animation: crt-flicker 0.15s infinite;
+    pointer-events: none;
+  }
+}
+
+@keyframes crt-flicker {
+  0% { opacity: 0.01; }
+  50% { opacity: 0.05; }
+  100% { opacity: 0.01; }
 }

@@ -1,38 +1,29 @@
 import React, { useState, useEffect } from 'react';
+import { useSound } from '../hooks/useSound';
 
-// A tiny, pixelated retro logo for the Start button
 const startLogo = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M0 2h7v6H0z' fill='%23ff0000'/%3E%3Cpath d='M9 2h7v6H9z' fill='%2300ff00'/%3E%3Cpath d='M0 9h7v6H0z' fill='%230000ff'/%3E%3Cpath d='M9 9h7v6H9z' fill='%23ffff00'/%3E%3C/svg%3E";
 
-const Taskbar = ({ openApps = [], onCloseApp, onOpenApp, toggleStartMenu, isStartMenuOpen }) => {
-  // 1. Dynamic Time & Date State
+const Taskbar = ({ openApps = [], activeWindowId, onCloseApp, onOpenApp, onMinimizeApp, toggleStartMenu, isStartMenuOpen }) => {
   const [time, setTime] = useState(new Date());
-  
-  // 2. Dynamic Network State
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  
-  // 3. Dynamic Battery State
   const [battery, setBattery] = useState({ level: 1, charging: false, supported: false });
-  
-  // 4. Mock Volume State
   const [volume, setVolume] = useState(100);
+  
+  const { playSound } = useSound();
 
   useEffect(() => {
-    // --- Clock Logic ---
     const timer = setInterval(() => setTime(new Date()), 1000);
-
-    // --- Network Logic ---
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // --- Battery Logic ---
     if ('getBattery' in navigator) {
       navigator.getBattery().then((batt) => {
         const updateBattery = () => {
           setBattery({ level: batt.level, charging: batt.charging, supported: true });
         };
-        updateBattery(); // Initial call
+        updateBattery();
         batt.addEventListener('levelchange', updateBattery);
         batt.addEventListener('chargingchange', updateBattery);
       });
@@ -49,13 +40,18 @@ const Taskbar = ({ openApps = [], onCloseApp, onOpenApp, toggleStartMenu, isStar
     setVolume(volume === 0 ? 100 : 0);
   };
 
+  const handleStartClick = (e) => { // <-- Add (e) here
+    playSound('menu-open');
+    toggleStartMenu(e);             // <-- Pass (e) here
+ 
+  };
+
   return (
     <div className="fixed bottom-0 left-0 w-full h-[30px] bg-os-gray border-t border-os-white shadow-[0_-1px_0_#dfdfdf] flex items-center px-1 z-[9999] select-none font-sans">
       
-      {/* --- CLASSIC START BUTTON --- */}
       <button 
-        onClick={toggleStartMenu}
-        className={`flex items-center gap-1.5 h-[22px] px-1.5 font-bold text-xs text-os-text outline-none focus:outline-none focus:ring-1 focus:ring-black focus:ring-offset-0 
+        onClick={handleStartClick}
+        className={`flex items-center gap-1.5 h-[22px] px-1.5 font-bold text-xs text-os-text outline-none focus:outline-none focus:ring-1 focus:ring-black focus:ring-offset-0 shrink-0
           ${isStartMenuOpen ? 'shadow-retro-inset pt-[2px] pl-[6px] pr-1 pb-0 bg-os-gray' : 'shadow-retro-outset bg-os-gray active:shadow-retro-inset active:pt-[2px] active:pl-[6px] active:pr-1 active:pb-0'}`}
         title="Click here to begin"
       >
@@ -63,30 +59,42 @@ const Taskbar = ({ openApps = [], onCloseApp, onOpenApp, toggleStartMenu, isStar
         <span className="mb-[1px]">Start</span>
       </button>
 
-      {/* Vertical Separator Ridge */}
-      <div className="w-[2px] h-[22px] bg-os-gray border-l border-os-dark-gray border-r border-os-white mx-1.5"></div>
-
-      {/* --- RUNNING APPLICATIONS AREA --- */}
-      <div className="flex-1 flex items-center space-x-1 overflow-x-auto h-[22px] no-scrollbar">
-        {openApps.map((app) => (
-          <button 
-            key={app.id} 
-            // In a real OS this toggles minimize/restore. For now, it represents the active window.
-            className="flex items-center gap-1.5 h-full min-w-[120px] max-w-[160px] px-1.5 shadow-retro-inset bg-os-gray text-os-text text-xs font-bold outline-none border border-transparent"
-          >
-            <img src={app.icon} alt={app.name} className="w-3.5 h-3.5 object-contain" style={{ imageRendering: 'pixelated' }} />
-            <span className="truncate flex-1 text-left">{app.name}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Vertical Separator Ridge */}
       <div className="w-[2px] h-[22px] bg-os-gray border-l border-os-dark-gray border-r border-os-white mx-1.5 shrink-0"></div>
 
-      {/* --- SYSTEM TRAY --- */}
-      <div className="shadow-retro-inset bg-os-gray h-[22px] px-2 flex items-center gap-3 shrink-0 border border-transparent">
+      {/* --- RUNNING APPLICATIONS AREA --- */}
+      {/* Added touch-pan-x and specific scrollbar hiding for smooth mobile swiping */}
+      <div className="flex-1 flex items-center space-x-1 overflow-x-auto h-[22px] no-scrollbar px-1 touch-pan-x">
+        {openApps.map((app) => {
+          const isActive = activeWindowId === app.id && !app.isMinimized;
+          
+          return (
+            <button 
+              key={app.id} 
+              onClick={() => {
+                playSound('button');
+                if (isActive) {
+                  onMinimizeApp(app.id); 
+                } else {
+                  onOpenApp(app.id);
+                }
+              }}
+              className={`flex items-center gap-1.5 h-full min-w-[100px] sm:min-w-[120px] max-w-[160px] text-os-text text-xs font-bold outline-none border border-transparent transition-none shrink-0
+                ${isActive 
+                  ? 'shadow-retro-inset pt-[2px] pl-[6px] pr-1 pb-0 bg-os-gray/90' 
+                  : 'shadow-retro-outset px-1.5 bg-os-gray hover:bg-os-gray active:shadow-retro-inset active:pt-[2px] active:pl-[6px] active:pr-1 active:pb-0' 
+                }`}
+            >
+              <img src={app.icon} alt={app.name} className="w-3.5 h-3.5 object-contain" style={{ imageRendering: 'pixelated' }} />
+              <span className="truncate flex-1 text-left mb-[1px]">{app.name}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="w-[2px] h-[22px] bg-os-gray border-l border-os-dark-gray border-r border-os-white mx-1.5 shrink-0 hidden sm:block"></div>
+
+      <div className="shadow-retro-inset bg-os-gray h-[22px] px-2 flex items-center gap-2 sm:gap-3 shrink-0 border border-transparent">
         
-        {/* Dynamic Battery Icon */}
         {battery.supported && (
           <div className="flex items-center" title={`Battery: ${Math.round(battery.level * 100)}% ${battery.charging ? '(Charging)' : ''}`}>
             <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" className="w-3.5 h-3.5">
@@ -97,7 +105,6 @@ const Taskbar = ({ openApps = [], onCloseApp, onOpenApp, toggleStartMenu, isStar
           </div>
         )}
 
-        {/* Dynamic Network / Wi-Fi Icon */}
         <div className="flex items-center cursor-help" title={isOnline ? "Network Connected" : "No Internet Connection"}>
           {isOnline ? (
             <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="square" className="w-3.5 h-3.5">
@@ -114,7 +121,6 @@ const Taskbar = ({ openApps = [], onCloseApp, onOpenApp, toggleStartMenu, isStar
           )}
         </div>
 
-        {/* Volume Toggle Icon */}
         <button onClick={toggleMute} className="flex items-center focus:outline-none" title={`Volume: ${volume}%`}>
           {volume > 0 ? (
             <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter" className="w-3.5 h-3.5">
@@ -130,12 +136,11 @@ const Taskbar = ({ openApps = [], onCloseApp, onOpenApp, toggleStartMenu, isStar
           )}
         </button>
 
-        {/* Dynamic Clock */}
-        <div className="font-sans text-xs text-os-text tracking-wide cursor-default" title={time.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}>
+        {/* Hidden on extra small mobile screens to save space */}
+        <div className="hidden sm:block font-sans text-xs text-os-text tracking-wide cursor-default" title={time.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}>
           {time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
         </div>
       </div>
-
     </div>
   );
 };

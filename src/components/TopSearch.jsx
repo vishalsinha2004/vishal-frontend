@@ -1,243 +1,208 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Draggable from 'react-draggable';
+import { useSound } from '../hooks/useSound';
+import { virtualFileSystem } from '../services/virtualFileSystem';
 
-// --- Retro Pixel Icons ---
-const findIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M20 20l8 8' stroke='%23000' stroke-width='4' stroke-linecap='square'/%3E%3Ccircle cx='14' cy='14' r='8' fill='%23fff' stroke='%23000' stroke-width='2'/%3E%3Cpath d='M12 16l4-4' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E";
-const aiIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='8' width='24' height='16' fill='%23000' stroke='%23000' stroke-width='2'/%3E%3Ccircle cx='10' cy='16' r='2' fill='%23ff0000'/%3E%3Ccircle cx='22' cy='16' r='2' fill='%23ff0000'/%3E%3Cpath d='M14 20h4' stroke='%2300ff00' stroke-width='2'/%3E%3C/svg%3E";
+const findIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='12' cy='12' r='8' fill='none' stroke='%23000' stroke-width='3'/%3E%3Cline x1='18' y1='18' x2='28' y2='28' stroke='%23000' stroke-width='4'/%3E%3C/svg%3E";
 
 const TopSearch = ({ systemApps, onOpenApp }) => {
+  const [isVisible, setIsVisible] = useState(false);
   const [query, setQuery] = useState('');
-  const [isFocused, setIsFocused] = useState(false); // Controls if the dialog is open
-  const [aiResponse, setAiResponse] = useState('');
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const searchRef = useRef(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [results, setResults] = useState([]);
+  
+  const { playSound } = useSound();
+  const nodeRef = useRef(null);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
-
-  // --- FILTER OUT INDIVIDUAL PROJECTS & GAMES ---
-  const coreApps = systemApps.filter(app => !app.project_type && !app.isGame);
-
+  // Global Keyboard & Event Listeners
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      // Allow closing the Find dialog if clicking outside of it
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
-        setIsFocused(false);
+    const handleOpen = () => setIsVisible(true);
+    
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey && e.key === 'f') {
+        e.preventDefault();
+        setIsVisible(true);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    
+    window.addEventListener('sys-search', handleOpen);
+    window.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      window.removeEventListener('sys-search', handleOpen);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
-  const filteredApps = coreApps.filter(app => 
-    app.name.toLowerCase().includes(query.toLowerCase())
-  );
-
-  const handleOpen = (appId) => {
-    if (appId === 'terminal') {
-      console.log("Terminal Quick Launch Clicked");
-    } else {
-      onOpenApp(appId);
+  // Debounced Search Execution
+  useEffect(() => {
+    if (!query.trim()) { 
+      setResults([]);
+      setIsSearching(false);
+      return; 
     }
-    setQuery('');
-    setIsFocused(false);
-    setAiResponse('');
-  };
 
-  const handleAskAI = async () => {
-    if (!query.trim()) return;
+    setIsSearching(true);
     
-    setIsAiLoading(true);
-    setAiResponse('');
-    
-    try {
-      const res = await fetch(`${API_BASE_URL}/ai-search/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query })
+    const timer = setTimeout(() => {
+      const lowerQ = query.toLowerCase();
+      const matches = [];
+
+      // 1. Search OS Apps & Projects
+      systemApps.forEach(app => {
+        if (
+          app.name.toLowerCase().includes(lowerQ) ||
+          (app.description && app.description.toLowerCase().includes(lowerQ)) ||
+          (app.tech_stack && app.tech_stack.toLowerCase().includes(lowerQ))
+        ) {
+          matches.push({ type: 'Application', name: app.name, id: app.id, icon: app.icon });
+        }
       });
+
+      // 2. Search Virtual Filesystem recursively
+      const searchFS = (node, path) => {
+        Object.keys(node).forEach(key => {
+          const item = node[key];
+          if (key.toLowerCase().includes(lowerQ)) {
+            matches.push({ 
+              type: item.type === 'dir' ? 'Folder' : 'File', 
+              name: key, 
+              path: path + '\\' + key, 
+              appId: item.appId || 'file-explorer' 
+            });
+          }
+          if (item.type === 'dir' && item.contents) {
+            searchFS(item.contents, path + '\\' + key);
+          }
+        });
+      };
       
-      const data = await res.json();
-      if (res.ok) {
-        setAiResponse(data.reply);
-      } else {
-        setAiResponse(`Error: ${data.error || 'Connection Failed.'}`);
+      if (virtualFileSystem["C:"] && virtualFileSystem["C:"].contents) {
+        searchFS(virtualFileSystem["C:"].contents, "C:");
       }
-    } catch (error) {
-      setAiResponse("Error: Local subsystem unreachable.");
-    }
-    setIsAiLoading(false);
+
+      setResults(matches);
+      setIsSearching(false);
+    }, 300); // 300ms delay to prevent excessive recursive re-renders
+
+    return () => clearTimeout(timer);
+  }, [query, systemApps]);
+
+  const handleResultClick = (res) => {
+    playSound('window-open');
+    if (res.id) onOpenApp(res.id); 
+    else if (res.appId) onOpenApp(res.appId); 
+    setIsVisible(false);
+    setQuery('');
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      if (filteredApps.length > 0 && query.trim() !== '') {
-        handleOpen(filteredApps[0].id);
-      } else if (query.trim() !== '') {
-        handleAskAI();
-      }
-    }
+  const handleAskLuma = () => {
+    playSound('click');
+    onOpenApp('luma-ai');
+    setIsVisible(false);
   };
+
+  if (!isVisible) return null;
 
   return (
-    <>
-      {/* 
-        In a 90s OS, the search isn't a persistent top bar. 
-        For UX convenience, we'll keep a small trigger button top-right on the desktop,
-        which opens the classic "Find" dialog.
-      */}
-      {!isFocused && (
-        <button 
-          onClick={() => setIsFocused(true)}
-          className="absolute top-4 right-4 retro-btn flex items-center gap-2 z-40 text-xs font-bold px-2 py-1"
-          title="Find: All Files"
-        >
-          <img src={findIcon} alt="" className="w-4 h-4" style={{ imageRendering: 'pixelated' }} />
-          Find...
-        </button>
-      )}
-
-      {/* --- CLASSIC "FIND" DIALOG --- */}
-      {isFocused && (
-        <div className="absolute inset-0 z-[100] flex items-center justify-center pointer-events-none">
-          <div 
-            ref={searchRef} 
-            className="retro-window w-[450px] shadow-retro-outset bg-os-gray font-sans text-os-text pointer-events-auto"
+    <Draggable nodeRef={nodeRef} handle=".retro-title-bar" bounds="parent">
+      <div ref={nodeRef} className="absolute z-[10000] top-20 left-20 w-[450px] bg-os-gray shadow-retro-outset border border-os-dark-gray flex flex-col font-sans select-none">
+        
+        {/* Title Bar */}
+        <div className="retro-title-bar bg-blue-900 text-white font-dialog font-bold px-1 flex justify-between items-center cursor-move">
+          <div className="flex items-center gap-1">
+            <img src={findIcon} alt="Find" className="w-3.5 h-3.5 invert" />
+            <span>Find: All Files</span>
+          </div>
+          <button 
+            className="retro-btn px-2 py-0 h-[18px] text-xs leading-none text-black bg-os-gray font-bold" 
+            onClick={() => setIsVisible(false)}
           >
-            {/* Title Bar */}
-            <div className="retro-title-bar select-none">
-              <div className="flex items-center gap-1">
-                <img src={findIcon} alt="" className="w-4 h-4" style={{ imageRendering: 'pixelated' }} />
-                <span>Find: All Files and Neural Nets</span>
-              </div>
-              <button onClick={() => { setIsFocused(false); setQuery(''); setAiResponse(''); }} className="retro-btn px-2 py-0 h-[18px] text-xs leading-none font-bold">
-                X
-              </button>
+            X
+          </button>
+        </div>
+        
+        {/* Menu Bar */}
+        <div className="border-b border-os-dark-gray flex gap-2 px-1 text-sm bg-os-gray">
+          <span className="cursor-pointer hover:bg-blue-900 hover:text-white px-1"><span className="underline">F</span>ile</span>
+          <span className="cursor-pointer hover:bg-blue-900 hover:text-white px-1"><span className="underline">E</span>dit</span>
+          <span className="cursor-pointer hover:bg-blue-900 hover:text-white px-1"><span className="underline">V</span>iew</span>
+          <span className="cursor-pointer hover:bg-blue-900 hover:text-white px-1"><span className="underline">H</span>elp</span>
+        </div>
+        
+        {/* Search Controls Area */}
+        <div className="p-2 flex gap-4 bg-os-gray">
+          <div className="flex flex-col gap-2 flex-1">
+            <div className="flex items-center gap-2">
+              <label className="text-xs w-16 text-right">Named:</label>
+              <input 
+                autoFocus
+                type="text" 
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="flex-1 retro-input px-1 py-[2px] text-xs shadow-retro-inset border border-os-dark-gray outline-none focus:bg-white text-black"
+                spellCheck="false"
+              />
             </div>
-
-            {/* Menu Bar */}
-            <div className="retro-menu-bar border-b border-os-dark-gray select-none">
-              <span className="retro-menu-item"><span className="underline">F</span>ile</span>
-              <span className="retro-menu-item"><span className="underline">E</span>dit</span>
-              <span className="retro-menu-item"><span className="underline">V</span>iew</span>
-              <span className="retro-menu-item"><span className="underline">O</span>ptions</span>
-              <span className="retro-menu-item"><span className="underline">H</span>elp</span>
+            <div className="flex items-center gap-2">
+              <label className="text-xs w-16 text-right">Look in:</label>
+              <select className="flex-1 retro-input px-1 py-[2px] text-xs shadow-retro-inset border border-os-dark-gray outline-none bg-white">
+                <option>Local Disk (C:)</option>
+                <option>Vishal OS</option>
+              </select>
             </div>
-
-            <div className="p-3 flex flex-col gap-3">
-              
-              {/* Tabs */}
-              <div className="flex gap-1 border-b border-os-white relative z-10 pl-2">
-                 <div className="bg-os-gray border border-os-white border-b-os-gray px-3 py-1 text-xs -mb-[1px] z-20">Name & Location</div>
-                 <div className="bg-os-gray border border-os-dark-gray px-3 py-1 text-xs -mb-[1px] opacity-70">Advanced</div>
-              </div>
-
-              {/* Search Inputs Area */}
-              <div className="bg-os-gray border border-os-white shadow-retro-outset p-3">
-                <div className="flex items-center gap-4 mb-2">
-                  <span className="text-xs w-16">Named:</span>
-                  <input 
-                    type="text" 
-                    className="retro-input flex-1" 
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    autoFocus
-                  />
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-xs w-16">Look in:</span>
-                  <select className="retro-input flex-1 py-[1px]">
-                    <option>C:\VISHAL\System</option>
-                    <option>D:\Projects</option>
-                    <option>Neural Net (Luma AI)</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-2">
-                <button 
-                  onClick={handleAskAI}
-                  disabled={isAiLoading || !query.trim()}
-                  className="retro-btn text-xs w-24 flex items-center justify-center gap-1 font-bold"
-                >
-                  <img src={aiIcon} alt="" className="w-3 h-3" style={{ imageRendering: 'pixelated' }} />
-                  Ask AI
-                </button>
-                <button onClick={() => { setQuery(''); setAiResponse(''); }} className="retro-btn text-xs w-24">
-                  New Search
-                </button>
-              </div>
-
-              {/* Results Area */}
-              {query && (
-                <div className="mt-2 flex flex-col gap-1">
-                  <span className="text-xs">Search Results:</span>
-                  <div className="bg-os-white shadow-retro-inset border border-os-dark-gray h-40 overflow-y-auto p-1 custom-scrollbar">
-                    
-                    {/* 1. Local Module Results */}
-                    {filteredApps.length > 0 && !aiResponse && !isAiLoading && (
-                      <ul className="flex flex-col">
-                        {filteredApps.map(app => (
-                          <li key={app.id}>
-                            <button 
-                              onClick={() => handleOpen(app.id)}
-                              className="w-full flex items-center gap-2 px-2 py-1 hover:bg-os-navy hover:text-os-white text-xs text-left outline-none"
-                            >
-                              <img src={app.icon} alt="" className="w-4 h-4 object-contain" style={{ imageRendering: 'pixelated' }} />
-                              <div className="flex flex-col">
-                                <span>{app.name}.exe</span>
-                                {app.tech_stack && <span className="text-[10px] opacity-70 truncate">{app.tech_stack}</span>}
-                              </div>
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-
-                    {/* 2. No Local Results Prompt */}
-                    {filteredApps.length === 0 && !aiResponse && !isAiLoading && (
-                      <div className="p-4 text-center flex flex-col items-center justify-center opacity-70">
-                        <span className="text-xs mb-1">0 file(s) found.</span>
-                        <span className="text-[10px]">Click 'Ask AI' to search the remote neural net.</span>
-                      </div>
-                    )}
-
-                    {/* 3. AI Terminal Area (Replaces skeleton loader with classic text loading) */}
-                    {(aiResponse || isAiLoading) && (
-                      <div className="p-2 h-full flex flex-col font-sans">
-                        <div className="flex items-center gap-2 mb-2 pb-1 border-b border-os-gray border-dotted">
-                          <img src={aiIcon} alt="" className="w-3 h-3" style={{ imageRendering: 'pixelated' }} />
-                          <span className="text-[10px] font-bold">LUMA AI LINK ESTABLISHED</span>
-                        </div>
-                        
-                        <div className="text-xs leading-relaxed">
-                          {isAiLoading ? (
-                            <span className="animate-pulse">Processing query...</span>
-                          ) : (
-                            <div className="whitespace-pre-wrap">{aiResponse}</div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                  </div>
-                </div>
-              )}
-
-            </div>
-            
-            {/* Status Bar */}
-            <div className="retro-status-bar mt-0 border-t border-os-dark-gray shadow-none">
-              <span>{filteredApps.length} object(s) found</span>
-              <div className="flex gap-4">
-                <span className="border-l border-os-dark-gray pl-2">{isAiLoading ? 'Connecting...' : 'Ready'}</span>
-              </div>
-            </div>
-
+          </div>
+          
+          <div className="flex flex-col gap-1 w-24">
+            <button className="retro-btn text-xs py-1 font-bold shadow-retro-outset active:shadow-retro-inset">Find Now</button>
+            <button className="retro-btn text-xs py-1 shadow-retro-outset active:shadow-retro-inset" onClick={() => { setQuery(''); setResults([]); }}>New Search</button>
           </div>
         </div>
-      )}
-    </>
+
+        {/* Results Area */}
+        <div className="border-t border-os-dark-gray border-b bg-os-white flex-1 min-h-[150px] max-h-[250px] overflow-y-auto shadow-retro-inset m-2 p-1">
+          {isSearching ? (
+             <div className="text-xs text-os-dark-gray p-2 italic">Searching...</div>
+          ) : query && results.length === 0 ? (
+            <div className="text-xs text-os-dark-gray p-2 italic">
+              0 file(s) found. <br/><br/>
+              <span className="text-black not-italic">Can't find what you're looking for?</span><br/>
+              <button 
+                onClick={handleAskLuma} 
+                className="text-blue-800 underline font-bold cursor-pointer outline-none hover:text-blue-600 mt-1"
+              >
+                Ask Luma AI instead.
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-[2px]">
+              {results.map((res, i) => (
+                <div 
+                  key={i} 
+                  className="flex items-center gap-2 px-1 hover:bg-os-navy hover:text-white cursor-pointer text-xs group py-[2px]"
+                  onClick={() => handleResultClick(res)}
+                >
+                  {res.icon ? (
+                    <img src={res.icon} className="w-3.5 h-3.5" style={{imageRendering: 'pixelated'}} alt=""/>
+                  ) : (
+                    <span className="text-sm leading-none">{res.type === 'Folder' ? '📁' : '📄'}</span>
+                  )}
+                  <span className="flex-1 truncate">{res.name}</span>
+                  <span className="text-os-dark-gray group-hover:text-gray-300 w-24 truncate text-right pr-2">
+                    {res.type}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {/* Status Bar */}
+        <div className="bg-os-gray shadow-retro-inset px-2 py-0.5 text-xs border border-os-dark-gray flex text-os-text">
+          <span>{isSearching ? 'Searching...' : `${results.length} file(s) found`}</span>
+        </div>
+      </div>
+    </Draggable>
   );
 };
 

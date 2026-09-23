@@ -1,198 +1,209 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useSound } from '../hooks/useSound';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
 const VoiceAssistant = () => {
-  const [isListening, setIsListening] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [status, setStatus] = useState('IDLE'); // IDLE, LISTENING, PROCESSING, SPEAKING, ERROR
+  const [emotion, setEmotion] = useState('neutral');
   const [transcript, setTranscript] = useState('');
-  const [emotion, setEmotion] = useState('NEUTRAL');
-  const [availableVoices, setAvailableVoices] = useState([]);
+  const [chatLog, setChatLog] = useState([
+    "[SYSTEM]: LUMA.EXE initialized.",
+    "[SYSTEM]: Groq AI interface connected.",
+    "[LUMA]: Online and ready. Speak or type a command."
+  ]);
+  const [inputText, setInputText] = useState('');
+  
+  const { playSound } = useSound();
+  const logEndRef = useRef(null);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+  // Cross-browser speech recognition support
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = SpeechRecognition ? new SpeechRecognition() : null;
 
+  // Auto-scroll transcript
   useEffect(() => {
-    const loadVoices = () => {
-      setAvailableVoices(window.speechSynthesis.getVoices());
-    };
-    
-    loadVoices();
-    
-    if (window.speechSynthesis.onvoiceschanged !== undefined) {
-      window.speechSynthesis.onvoiceschanged = loadVoices;
-    }
-  }, []);
+    logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatLog]);
 
-  const handleMicClick = () => {
-    if (isListening || isProcessing) return;
+  const appendLog = (sender, msg) => {
+    setChatLog(prev => [...prev, `[${sender}]: ${msg}`]);
+  };
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setTranscript("ERR: Speech Recognition API not supported.");
+  const handleListen = () => {
+    if (!recognition) {
+      appendLog('SYSTEM', 'Speech recognition not supported in this browser.');
       return;
     }
+    playSound('button');
+    setStatus('LISTENING');
+    recognition.start();
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => {
-      setIsListening(true);
-      setTranscript('Listening for audio input...');
-      setEmotion('NEUTRAL');
-      window.speechSynthesis.cancel();
+    recognition.onresult = (event) => {
+      const current = event.resultIndex;
+      const text = event.results[current][0].transcript;
+      setTranscript(text);
+      appendLog('USER', text);
+      sendToAI(text);
     };
 
-    recognition.onresult = async (event) => {
-      const text = event.results[0][0].transcript;
-      setIsListening(false);
-      setTranscript(`USR> ${text}`);
-      await processVoiceCommand(text);
+    recognition.onspeechend = () => {
+      recognition.stop();
+      if (status === 'LISTENING') setStatus('PROCESSING');
     };
 
     recognition.onerror = (event) => {
-      console.error("Speech error", event.error);
-      setIsListening(false);
-      setTranscript('ERR: No speech detected or mic failure.');
+      setStatus('ERROR');
+      playSound('error');
+      appendLog('SYSTEM', `Microphone error: ${event.error}`);
     };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognition.start();
   };
 
-  const processVoiceCommand = async (text) => {
-    setIsProcessing(true);
-    setTranscript('SYS> Processing natural language query...');
-    
+  const handleTextSubmit = (e) => {
+    e.preventDefault();
+    if (!inputText.trim()) return;
+    playSound('typing');
+    appendLog('USER', inputText);
+    sendToAI(inputText);
+    setInputText('');
+  };
+
+  const sendToAI = async (text) => {
+    setStatus('PROCESSING');
+    setEmotion('thinking');
     try {
-      const res = await fetch(`${API_BASE_URL}/voice-assistant/`, {
+      // Calls your existing backend API endpoint
+      const response = await fetch(`${API_BASE_URL}/voice-assistant/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: text })
+        body: JSON.stringify({ query: text }) // Adjust payload key to match your Django view
       });
       
-      const data = await res.json();
-      if (res.ok) {
-        speakResponse(data.reply);
-      } else {
-        speakResponse("[SAD] Subsystem error occurred.");
-      }
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const data = await response.json();
+      
+      // Fallback keys in case your backend uses different standard response formats
+      const reply = data.response || data.message || data.answer || data.reply || "I received your request, but the response was empty.";
+      
+      setStatus('SPEAKING');
+      setEmotion(data.emotion || 'happy');
+      appendLog('LUMA', reply);
+      playSound('ai-response');
+      speakText(reply);
+
     } catch (error) {
-      speakResponse("[SAD] Cannot connect to central AI core.");
+      setStatus('ERROR');
+      setEmotion('sad');
+      playSound('error');
+      appendLog('SYSTEM', `Connection to AI Server failed: ${error.message}`);
     }
-    setIsProcessing(false);
   };
 
-  const speakResponse = (fullText) => {
-    const match = fullText.match(/^\[(.*?)\]\s*(.*)/);
-    let currentEmotion = 'NEUTRAL';
-    let cleanText = fullText;
-
-    if (match) {
-      currentEmotion = match[1].toUpperCase();
-      cleanText = match[2];
+  const speakText = (text) => {
+    if (!('speechSynthesis' in window)) {
+       setStatus('IDLE');
+       return;
     }
-
-    setEmotion(currentEmotion);
-    setTranscript(`AI> ${cleanText}`);
-
+    
+    // Strip markdown formatting for cleaner speech
+    const cleanText = text.replace(/[*#_]/g, '');
+    
     const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.pitch = 1.1; // Slightly robotic/higher pitch
+    utterance.rate = 1.0;
     
-    if (availableVoices.length > 0) {
-      const femaleVoice = availableVoices.find(voice => 
-        voice.name.includes('Zira') ||                  
-        voice.name.includes('Neerja') ||                
-        voice.name.includes('Samantha') ||              
-        voice.name.includes('Victoria') ||              
-        voice.name.includes('Google UK English Female') 
-      );
-
-      if (femaleVoice) {
-        utterance.voice = femaleVoice;
-      }
-    }
+    utterance.onend = () => {
+      setStatus('IDLE');
+      setEmotion('neutral');
+    };
     
-    if (currentEmotion === 'HAPPY' || currentEmotion === 'EXCITED') {
-      utterance.pitch = 1.2;
-      utterance.rate = 1.1;
-    } else if (currentEmotion === 'SAD' || currentEmotion === 'EMPATHETIC') {
-      utterance.pitch = 0.8;
-      utterance.rate = 0.9;
-    } else if (currentEmotion === 'ANGRY' || currentEmotion === 'FRUSTRATED') {
-      utterance.pitch = 0.9;
-      utterance.rate = 1.2;
-    } else {
-      utterance.pitch = 1.0;
-      utterance.rate = 1.0;
-    }
-
     window.speechSynthesis.speak(utterance);
   };
 
-  // Convert modern glow colors to harsh 90s LED indicator colors
-  const getRetroEmotionColor = () => {
-    switch(emotion) {
-      case 'HAPPY': case 'EXCITED': return 'bg-[#00ff00] shadow-[0_0_5px_#00ff00]'; 
-      case 'ANGRY': case 'FRUSTRATED': return 'bg-[#ff0000] shadow-[0_0_5px_#ff0000]'; 
-      case 'SAD': case 'EMPATHETIC': return 'bg-[#ff00ff] shadow-[0_0_5px_#ff00ff]'; 
-      default: return 'bg-[#ffff00]'; // Yellow for idle/neutral active
-    }
+  const handleStopAudio = () => {
+    playSound('click');
+    window.speechSynthesis.cancel();
+    if (recognition) recognition.stop();
+    setStatus('IDLE');
+    setEmotion('neutral');
+  };
+
+  // ASCII Faces for Retro Emotions
+  const getFace = () => {
+    if (status === 'LISTENING') return '(O_O)';
+    if (status === 'PROCESSING') return '(-_-)zZ';
+    if (status === 'ERROR') return '(x_x)';
+    if (emotion === 'happy') return '(^u^)';
+    if (emotion === 'sad') return '(._.)';
+    if (emotion === 'thinking') return '(?_?)';
+    return '(o_o)';
   };
 
   return (
-    <div className="absolute bottom-12 right-4 z-[80] flex flex-col items-end select-none">
-      
-      {/* Main Voice Utility Window */}
-      <div className="retro-window w-64 bg-os-gray font-sans text-os-text shadow-retro-outset">
-        
-        {/* Title Bar */}
-        <div className="retro-title-bar cursor-default">
-          <div className="flex items-center gap-1">
-            <span className="text-[10px]">🎙️</span>
-            <span>Luma AI Link</span>
-          </div>
-          <button className="retro-btn px-2 py-0 h-[18px] text-xs leading-none font-bold">X</button>
+    <div className="flex flex-col h-full bg-os-gray p-2 font-sans select-none">
+      <div className="flex gap-4 mb-2">
+        {/* Visualizer / Avatar */}
+        <div className="w-32 h-32 bg-black border-2 border-os-dark-gray shadow-retro-inset flex flex-col items-center justify-center text-green-500 font-pixel text-5xl">
+           <div className={status === 'SPEAKING' ? 'animate-pulse text-yellow-400' : ''}>{getFace()}</div>
+           <div className="text-[10px] mt-4 text-green-700 font-terminal uppercase tracking-widest">LUMA.EXE v1.0</div>
         </div>
-
-        <div className="p-2 border-t border-os-white">
-          
-          {/* Status Display Area */}
-          <div className="flex items-center justify-between mb-2 px-1">
-            <div className="flex items-center gap-2">
-               {/* Hardware LED Emotion Indicator */}
-               <div className={`w-3 h-3 border border-os-dark-gray shadow-retro-inset ${!isListening && !isProcessing && transcript === '' ? 'bg-black' : getRetroEmotionColor()}`}></div>
-               <span className="text-[10px] font-bold uppercase tracking-wider">
-                 {isListening ? 'Awaiting Audio...' : isProcessing ? 'Computing...' : 'System Idle'}
-               </span>
-            </div>
-          </div>
-
-          {/* Terminal Transcript Box */}
-          <div className="bg-os-white shadow-retro-inset border border-os-dark-gray h-20 p-2 mb-3 overflow-y-auto text-xs font-mono text-os-text custom-scrollbar break-words">
-            {transcript || "Ready. Click 'Record' to issue a voice command."}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-1 justify-between">
-            
-            <button 
-              onClick={handleMicClick}
-              disabled={isListening || isProcessing}
-              className={`retro-btn flex-1 flex items-center justify-center gap-1 text-xs font-bold ${isListening ? 'shadow-retro-inset bg-os-dark-gray text-os-white' : ''}`}
-            >
-              <div className={`w-2 h-2 rounded-full ${isListening ? 'bg-[#ff0000] shadow-[0_0_5px_#ff0000]' : 'bg-[#800000]'}`}></div>
-              {isListening ? 'Recording' : 'Record'}
-            </button>
-            
-            <button className="retro-btn px-3 text-xs" title="Settings">⚙️</button>
-            <button className="retro-btn px-3 text-xs font-bold" title="Help">?</button>
-            
-          </div>
-
+        
+        {/* Status Panel */}
+        <div className="flex-1 flex flex-col gap-2">
+           <div className="bg-os-white border border-os-dark-gray shadow-retro-inset p-2 h-16 flex flex-col justify-center">
+              <div className="text-[10px] font-bold text-os-dark-gray mb-1 uppercase">System Status</div>
+              <div className={`text-lg font-terminal uppercase font-bold 
+                ${status === 'ERROR' ? 'text-red-600' : status === 'LISTENING' ? 'text-red-500 animate-pulse' : 'text-blue-900'}`}>
+                {status}
+              </div>
+           </div>
+           
+           <div className="flex gap-2 mt-auto">
+             <button 
+               className="retro-btn flex-1 py-2 font-bold text-xs flex items-center justify-center gap-2" 
+               onClick={handleListen} 
+               disabled={status === 'LISTENING' || status === 'PROCESSING' || status === 'SPEAKING'}
+             >
+               <span className="text-red-600 text-lg leading-none">●</span> Start Mic
+             </button>
+             <button 
+               className="retro-btn flex-1 py-2 text-xs flex items-center justify-center gap-2" 
+               onClick={handleStopAudio}
+             >
+               <span className="text-black text-lg leading-none">■</span> Stop
+             </button>
+           </div>
         </div>
       </div>
+
+      {/* Transcript Log */}
+      <div className="flex-1 bg-black border border-os-white shadow-retro-inset p-2 overflow-y-auto font-terminal text-[11px] text-green-500 mb-2 leading-relaxed">
+         {chatLog.map((log, i) => (
+            <div key={i} className={`mb-1 
+              ${log.startsWith('[USER]') ? 'text-yellow-400' : ''} 
+              ${log.startsWith('[SYSTEM]') ? 'text-red-500 font-bold' : ''}
+              ${log.startsWith('[LUMA]') ? 'text-[#00ff00]' : ''}
+            `}>
+               {log}
+            </div>
+         ))}
+         <div ref={logEndRef} />
+      </div>
+
+      {/* Text Input Fallback */}
+      <form onSubmit={handleTextSubmit} className="flex gap-2">
+        <input 
+          type="text" 
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          placeholder="Type a command or query..."
+          className="flex-1 bg-white border border-os-dark-gray shadow-retro-inset px-2 py-1 text-xs font-sans outline-none focus:bg-blue-50"
+          disabled={status === 'PROCESSING'}
+          spellCheck="false"
+        />
+        <button type="submit" className="retro-btn px-4 font-bold text-xs" disabled={status === 'PROCESSING'}>Send</button>
+      </form>
     </div>
   );
 };

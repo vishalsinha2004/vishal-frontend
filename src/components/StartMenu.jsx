@@ -1,123 +1,69 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useSound } from '../hooks/useSound';
 
-const StartMenu = ({ systemApps, onOpenApp, closeMenu }) => {
-  const [activeSubmenu, setActiveSubmenu] = useState(null);
+const StartMenu = ({ systemApps, onOpenApp, closeMenu, onShutDown, onLogOff }) => {
+  const { playSound } = useSound();
 
-  // Group apps logically for the classic 90s menu structure
-  const programs = systemApps.filter(app => !['settings', 'tic-tac-toe', 'problem-solver'].includes(app.id));
-  const games = systemApps.filter(app => ['tic-tac-toe', 'problem-solver'].includes(app.id));
-
-  const handleOpen = (id) => {
-    onOpenApp(id);
+  const handleMenuClick = (action) => {
+    playSound('click');
+    action();
     closeMenu();
   };
 
   return (
-    <div className="absolute bottom-[30px] left-0 bg-os-gray shadow-retro-outset flex flex-row z-[9999] font-sans select-none border border-os-dark-gray min-w-[200px]">
-      
-      {/* --- VERTICAL OS BANNER (Left Side) --- */}
-      <div className="bg-os-navy w-8 flex flex-col justify-end items-center pb-2 relative overflow-hidden">
-        <div className="absolute bottom-16 -left-12 -rotate-90 origin-bottom-right text-os-gray font-bold text-lg tracking-widest whitespace-nowrap opacity-80">
-          VISHAL OS <span className="text-os-white">98</span>
-        </div>
+    <div className="absolute bottom-[30px] left-1 w-48 bg-os-gray shadow-retro-outset border border-os-white z-[10000] flex font-sans text-sm select-none">
+      {/* Left branding bar */}
+      <div className="w-7 bg-blue-900 flex items-end justify-start pb-2 text-os-white">
+        <span className="transform -rotate-90 origin-bottom-left whitespace-nowrap font-bold text-lg tracking-widest pl-2">
+          <span className="text-os-gray">Vishal</span> OS 98
+        </span>
       </div>
-
-      {/* --- MENU ITEMS (Right Side) --- */}
-      <div className="flex-1 py-1 flex flex-col">
+      
+      {/* Menu items */}
+<div className="flex-1 py-1 flex flex-col">
+        {systemApps.map(app => (
+          <div 
+            key={app.id}
+            className="px-3 py-2 hover:bg-os-navy hover:text-white flex items-center gap-3 cursor-default"
+            onClick={() => handleMenuClick(() => onOpenApp(app.id))}
+          >
+            <img src={app.icon} alt="" className="w-6 h-6 object-contain" style={{ imageRendering: 'pixelated' }} />
+            <span className="truncate">{app.name}</span>
+          </div>
+        ))}
         
-        {/* Programs Submenu Trigger */}
+        <div className="border-t border-os-dark-gray border-b border-os-white my-1 mx-1"></div>
+        
+        {/* --- ADD THIS FIND BLOCK HERE --- */}
         <div 
-          className={`relative flex items-center justify-between px-3 py-1 cursor-default hover:bg-os-navy hover:text-os-white ${activeSubmenu === 'programs' ? 'bg-os-navy text-os-white' : 'text-os-text'}`}
-          onMouseEnter={() => setActiveSubmenu('programs')}
+          className="px-3 py-2 hover:bg-os-navy hover:text-white flex items-center gap-3 cursor-default"
+          onClick={() => handleMenuClick(() => window.dispatchEvent(new CustomEvent('sys-search')))}
         >
-          <div className="flex items-center gap-2">
-            <span className="text-xs">📁</span>
-            <span className="text-xs font-bold"><span className="underline">P</span>rograms</span>
+          <div className="w-6 h-6 flex items-center justify-center font-bold text-lg leading-none bg-transparent">
+            🔍
           </div>
-          <span className="text-[10px]">▶</span>
-
-          {/* Programs Submenu Content */}
-          {activeSubmenu === 'programs' && (
-            <div className="absolute left-[100%] bottom-0 min-w-[150px] bg-os-gray shadow-retro-outset py-1 border border-os-dark-gray z-50">
-              {programs.map(app => (
-                <div 
-                  key={app.id}
-                  onClick={() => handleOpen(app.id)}
-                  className="flex items-center gap-2 px-3 py-1 text-os-text text-xs hover:bg-os-navy hover:text-os-white cursor-default"
-                >
-                  <img src={app.icon} alt="" className="w-4 h-4 object-contain" style={{ imageRendering: 'pixelated' }} />
-                  <span className="truncate">{app.name}</span>
-                </div>
-              ))}
-            </div>
-          )}
+          <span>Find...</span>
         </div>
-
-        {/* Games Submenu Trigger */}
+        
+        <div className="border-t border-os-dark-gray border-b border-os-white my-1 mx-1"></div>
+        
         <div 
-          className={`relative flex items-center justify-between px-3 py-1 cursor-default hover:bg-os-navy hover:text-os-white ${activeSubmenu === 'games' ? 'bg-os-navy text-os-white' : 'text-os-text'}`}
-          onMouseEnter={() => setActiveSubmenu('games')}
+          className="px-3 py-2 hover:bg-os-navy hover:text-white flex items-center gap-3 cursor-default"
+          onClick={() => handleMenuClick(onLogOff)}
         >
-          <div className="flex items-center gap-2">
-            <span className="text-xs">🕹️</span>
-            <span className="text-xs"><span className="underline">G</span>ames</span>
+          <div className="w-6 h-6 flex items-center justify-center font-bold text-sm bg-yellow-500 text-black rounded-full border border-black shadow-sm">!</div>
+          <span>Log Off Vishal...</span>
+        </div>
+        
+        <div 
+          className="px-3 py-2 hover:bg-os-navy hover:text-white flex items-center gap-3 cursor-default"
+          onClick={() => handleMenuClick(onShutDown)}
+        >
+          <div className="w-6 h-6 flex items-center justify-center bg-red-600 border border-black rounded-sm shadow-sm">
+            <div className="w-2.5 h-2.5 rounded-full border-[3px] border-white border-t-transparent"></div>
           </div>
-          <span className="text-[10px]">▶</span>
-
-          {/* Games Submenu Content */}
-          {activeSubmenu === 'games' && (
-            <div className="absolute left-[100%] bottom-0 min-w-[150px] bg-os-gray shadow-retro-outset py-1 border border-os-dark-gray z-50">
-              {games.map(app => (
-                <div 
-                  key={app.id}
-                  onClick={() => handleOpen(app.id)}
-                  className="flex items-center gap-2 px-3 py-1 text-os-text text-xs hover:bg-os-navy hover:text-os-white cursor-default"
-                >
-                  <img src={app.icon} alt="" className="w-4 h-4 object-contain" style={{ imageRendering: 'pixelated' }} />
-                  <span className="truncate">{app.name}</span>
-                </div>
-              ))}
-            </div>
-          )}
+          <span>Shut Down...</span>
         </div>
-
-        <div className="w-full h-[1px] bg-os-dark-gray my-1 border-b border-os-white"></div>
-
-        {/* Direct Links */}
-        <div 
-          onClick={() => handleOpen('settings')}
-          onMouseEnter={() => setActiveSubmenu(null)}
-          className="flex items-center gap-2 px-3 py-1 text-os-text hover:bg-os-navy hover:text-os-white cursor-default"
-        >
-          <span className="text-xs">⚙️</span>
-          <span className="text-xs"><span className="underline">S</span>ettings</span>
-        </div>
-
-        <div 
-          onClick={() => handleOpen('system-os')}
-          onMouseEnter={() => setActiveSubmenu(null)}
-          className="flex items-center gap-2 px-3 py-1 text-os-text hover:bg-os-navy hover:text-os-white cursor-default"
-        >
-          <span className="text-xs">🔍</span>
-          <span className="text-xs"><span className="underline">F</span>ind...</span>
-        </div>
-
-        <div className="w-full h-[1px] bg-os-dark-gray my-1 border-b border-os-white"></div>
-
-        {/* Shut Down Action */}
-        <div 
-          onClick={() => {
-            // Note: In a full implementation, this opens a shutdown dialog
-            alert("Shut Down logic to be implemented in SystemDialog.jsx");
-            closeMenu();
-          }}
-          onMouseEnter={() => setActiveSubmenu(null)}
-          className="flex items-center gap-2 px-3 py-1 text-os-text hover:bg-os-navy hover:text-os-white cursor-default"
-        >
-          <span className="text-xs">⏻</span>
-          <span className="text-xs">Sh<span className="underline">u</span>t Down...</span>
-        </div>
-
       </div>
     </div>
   );
