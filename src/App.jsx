@@ -6,30 +6,280 @@ import StartMenu from './components/StartMenu';
 import TopSearch from './components/TopSearch';
 import VoiceAssistant from './components/VoiceAssistant';
 import SystemDialog from './components/SystemDialog';
+import SplashScreen from './components/SplashScreen'; // <-- NEW IMPORT
 import { useWindowManager } from './hooks/useWindowManager';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useSound } from './hooks/useSound';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
+
+const svgIcon = (svg) =>
+  `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 // --- RETRO PIXEL ICONS ---
-const systemOsIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='24' height='24' fill='%23c0c0c0' stroke='%23000' stroke-width='2'/%3E%3Crect x='8' y='8' width='16' height='12' fill='%23000080' stroke='%23000' stroke-width='2'/%3E%3Crect x='6' y='22' width='20' height='4' fill='%23808080'/%3E%3C/svg%3E";
-const aboutUsIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='6' y='4' width='20' height='24' fill='%23fff' stroke='%23000' stroke-width='2'/%3E%3Ccircle cx='16' cy='12' r='4' fill='%23000080'/%3E%3Cpath d='M10 24v-2c0-3 3-4 6-4s6 1 6 4v2' fill='%23000080'/%3E%3C/svg%3E";
-const settingsIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='24' height='24' fill='%23c0c0c0' stroke='%23000' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23808080' stroke='%23000' stroke-width='2'/%3E%3Crect x='14' y='8' width='4' height='16' fill='%23000'/%3E%3Crect x='8' y='14' width='16' height='4' fill='%23000'/%3E%3C/svg%3E";
-const folderIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 8h8l2 4h14v12H4z' fill='%23ffff00' stroke='%23000' stroke-width='2' stroke-linejoin='miter'/%3E%3Cpath d='M4 12h24' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E";
-const fileExplorerIcon = folderIcon;
-const resumeIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='6' y='4' width='20' height='24' fill='%23fff' stroke='%23000' stroke-width='2'/%3E%3Cline x1='10' y1='10' x2='22' y2='10' stroke='%23000' stroke-width='2'/%3E%3Cline x1='10' y1='14' x2='22' y2='14' stroke='%23000' stroke-width='2'/%3E%3Cline x1='10' y1='18' x2='18' y2='18' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E";
-const gamesFolderIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 8h8l2 4h14v12H4z' fill='%23ff00ff' stroke='%23000' stroke-width='2' stroke-linejoin='miter'/%3E%3Ccircle cx='16' cy='18' r='4' fill='%23fff' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E";
-const ticTacToeIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='24' height='24' fill='%23fff' stroke='%23000' stroke-width='2'/%3E%3Cline x1='12' y1='6' x2='12' y2='26' stroke='%23000' stroke-width='2'/%3E%3Cline x1='20' y1='6' x2='20' y2='26' stroke='%23000' stroke-width='2'/%3E%3Cline x1='6' y1='12' x2='26' y2='12' stroke='%23000' stroke-width='2'/%3E%3Cline x1='6' y1='20' x2='26' y2='20' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E";
-const problemSolverIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='24' height='24' fill='%23000' stroke='%23000' stroke-width='2'/%3E%3Ctext x='8' y='20' font-family='monospace' font-size='16' fill='%2300ff00'\>C:\\\</text\>%3C/svg%3E";
-const recycleBinIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M8 6h16v2H8z' fill='%23808080' stroke='%23000' stroke-width='2'/%3E%3Cpath d='M10 8h12l-2 18H12z' fill='%23c0c0c0' stroke='%23000' stroke-width='2'/%3E%3Cpath d='M14 11v12M18 11v12' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E";
-const networkIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='12' width='10' height='8' fill='%23c0c0c0' stroke='%23000' stroke-width='2'/%3E%3Crect x='18' y='12' width='10' height='8' fill='%23c0c0c0' stroke='%23000' stroke-width='2'/%3E%3Cpath d='M9 20v4h14v-4' fill='none' stroke='%23000' stroke-width='2'/%3E%3Cpath d='M16 24v4' fill='none' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E";
-const ieIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2a14 14 0 100 28 14 14 0 000-28zm5.5 21A11.5 11.5 0 0116 26a12 12 0 01-10-8c2-3 6-4 10-4h4v-3h-4a8 8 0 106 10v2z' fill='%23000080' stroke='%23000080' stroke-width='1'/%3E%3Cpath d='M4 14a12 12 0 0118-8v3a9 9 0 00-13 6h-5z' fill='%23ffff00'/%3E%3C/svg%3E";
-const lumaAiIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2C9 2 4 7 4 14c0 3 1 6 3 8v6h18v-6c2-2 3-5 3-8 0-7-5-12-12-12zm0 4c5 0 8 4 8 8 0 4-3 7-5 8v2H13v-2c-2-1-5-4-5-8 0-4 3-8 8-8z' fill='%23000080' stroke='%23000' stroke-width='1'/%3E%3Ccircle cx='11' cy='12' r='2' fill='%23ff0000'/%3E%3Ccircle cx='21' cy='12' r='2' fill='%23ff0000'/%3E%3Cpath d='M11 20h10v2H11z' fill='%23000080'/%3E%3C/svg%3E";
-const sysMonitorIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='6' width='24' height='20' fill='%23fff' stroke='%23000' stroke-width='2'/%3E%3Cpath d='M8 22v-6m4 6v-10m4 10v-4m4 4v-12m4 12v-8' stroke='%2300ff00' stroke-width='2' stroke-linecap='square'/%3E%3C/svg%3E";
-const notepadIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M6 2h14l6 6v22H6V2z' fill='%23fff' stroke='%23000' stroke-width='2'/%3E%3Cpath d='M20 2v6h6' fill='none' stroke='%23000' stroke-width='2'/%3E%3Cline x1='10' y1='12' x2='22' y2='12' stroke='%23000' stroke-width='2'/%3E%3Cline x1='10' y1='16' x2='22' y2='16' stroke='%23000' stroke-width='2'/%3E%3Cline x1='10' y1='20' x2='22' y2='20' stroke='%23000' stroke-width='2'/%3E%3Cline x1='10' y1='24' x2='16' y2='24' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E";
-const paintIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M6 10c0-6 20-6 20 0 0 4-4 6-6 10s-2 10-4 10-2-6-4-10-6-6-6-10z' fill='%23c0c0c0' stroke='%23000' stroke-width='2'/%3E%3Ccircle cx='10' cy='8' r='2' fill='%23ff0000'/%3E%3Ccircle cx='16' cy='6' r='2' fill='%2300ff00'/%3E%3Ccircle cx='22' cy='8' r='2' fill='%230000ff'/%3E%3Ccircle cx='16' cy='12' r='2' fill='%23ffff00'/%3E%3Cpath d='M10 24l-6 6M8 24l-4 4' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E";
-const minesweeperIcon = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='24' height='24' fill='%23c0c0c0' stroke='%23000' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='8' fill='%23000'/%3E%3Cpath d='M16 4v4M16 24v4M4 16h4M24 16h4M8 8l3 3M21 21l3 3M24 8l-3 3M11 21l-3 3' stroke='%23000' stroke-width='2'/%3E%3Ccircle cx='14' cy='14' r='2' fill='%23fff'/%3E%3C/svg%3E";
+// ------------------------------------------------------------
+// MY COMPUTER
+// ------------------------------------------------------------
+const systemOsIcon = svgIcon(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+    <rect x="5" y="4" width="22" height="17" fill="#c0c0c0" stroke="#000" stroke-width="2"/>
+    <rect x="8" y="7" width="16" height="11" fill="#000080"/>
+    <rect x="10" y="9" width="12" height="7" fill="#008080"/>
+    <rect x="14" y="21" width="4" height="3" fill="#808080"/>
+    <rect x="10" y="24" width="12" height="3" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
+    <rect x="8" y="27" width="16" height="2" fill="#000"/>
+  </svg>
+`);
+
+// ------------------------------------------------------------
+// ABOUT VISHAL
+// ------------------------------------------------------------
+const aboutUsIcon = svgIcon(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+    <rect x="6" y="3" width="20" height="26" fill="#fff" stroke="#000" stroke-width="2"/>
+    <rect x="9" y="6" width="14" height="8" fill="#000080"/>
+    <rect x="13" y="8" width="6" height="4" fill="#c0c0c0"/>
+    <rect x="10" y="17" width="12" height="2" fill="#000080"/>
+    <rect x="10" y="21" width="9" height="2" fill="#808080"/>
+    <rect x="10" y="25" width="12" height="2" fill="#808080"/>
+  </svg>
+`);
+
+// ------------------------------------------------------------
+// CONTROL PANEL
+// ------------------------------------------------------------
+const settingsIcon = svgIcon(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+    <rect x="4" y="4" width="24" height="24" fill="#c0c0c0" stroke="#000" stroke-width="2"/>
+    <rect x="8" y="8" width="16" height="4" fill="#000080"/>
+    <rect x="8" y="14" width="16" height="4" fill="#fff" stroke="#808080" stroke-width="1"/>
+    <rect x="8" y="20" width="16" height="4" fill="#fff" stroke="#808080" stroke-width="1"/>
+    <rect x="10" y="15" width="4" height="2" fill="#000080"/>
+    <rect x="18" y="21" width="4" height="2" fill="#000080"/>
+  </svg>
+`);
+
+// ------------------------------------------------------------
+// CLOSED FOLDER
+// ------------------------------------------------------------
+const folderIcon = svgIcon(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+    <path d="M3 8h10l3 3h13v15H3z" fill="#000" />
+    <path d="M4 7h9l3 3h12v14H4z" fill="#ffff00"/>
+    <rect x="4" y="11" width="24" height="2" fill="#c0c000"/>
+    <rect x="5" y="23" width="22" height="2" fill="#808000"/>
+  </svg>
+`);
+
+// ------------------------------------------------------------
+// FILE EXPLORER — OPEN FOLDER
+// ------------------------------------------------------------
+const fileExplorerIcon = svgIcon(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+    <path d="M3 8h9l3 3h14v15H3z" fill="#000"/>
+    <path d="M4 7h8l3 3h13v14H4z" fill="#ffff00"/>
+    <path d="M5 12h23l-4 12H5z" fill="#ffd700"/>
+    <rect x="5" y="22" width="18" height="2" fill="#808000"/>
+    <rect x="15" y="10" width="12" height="2" fill="#c0c000"/>
+  </svg>
+`);
+
+// ------------------------------------------------------------
+// RESUME / DOCUMENT
+// ------------------------------------------------------------
+const resumeIcon = svgIcon(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+    <path d="M7 3h14l5 5v21H7z" fill="#000"/>
+    <path d="M8 4h12l5 5v19H8z" fill="#fff"/>
+    <path d="M20 4v6h6" fill="#c0c0c0"/>
+    <rect x="11" y="13" width="12" height="2" fill="#000080"/>
+    <rect x="11" y="17" width="10" height="2" fill="#808080"/>
+    <rect x="11" y="21" width="12" height="2" fill="#808080"/>
+    <rect x="11" y="25" width="7" height="2" fill="#808080"/>
+  </svg>
+`);
+
+// ------------------------------------------------------------
+// GAMES FOLDER
+// ------------------------------------------------------------
+const gamesFolderIcon = svgIcon(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+    <path d="M3 8h10l3 3h13v15H3z" fill="#000"/>
+    <path d="M4 7h9l3 3h12v14H4z" fill="#ffff00"/>
+    <rect x="5" y="13" width="22" height="9" fill="#000080"/>
+    <rect x="9" y="16" width="6" height="2" fill="#fff"/>
+    <rect x="11" y="14" width="2" height="6" fill="#fff"/>
+    <rect x="19" y="15" width="2" height="2" fill="#fff"/>
+    <rect x="22" y="18" width="2" height="2" fill="#fff"/>
+  </svg>
+`);
+
+// ------------------------------------------------------------
+// TIC TAC TOE
+// ------------------------------------------------------------
+const ticTacToeIcon = svgIcon(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+    <rect x="4" y="4" width="24" height="24" fill="#c0c0c0" stroke="#000" stroke-width="2"/>
+    <rect x="8" y="8" width="16" height="16" fill="#fff"/>
+    <rect x="13" y="8" width="2" height="16" fill="#000080"/>
+    <rect x="19" y="8" width="2" height="16" fill="#000080"/>
+    <rect x="8" y="13" width="16" height="2" fill="#000080"/>
+    <rect x="8" y="19" width="16" height="2" fill="#000080"/>
+    <rect x="9" y="9" width="3" height="3" fill="#ff0000"/>
+    <rect x="21" y="21" width="3" height="3" fill="#0000ff"/>
+  </svg>
+`);
+
+// ------------------------------------------------------------
+// MS-DOS PROMPT
+// ------------------------------------------------------------
+const problemSolverIcon = svgIcon(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+    <rect x="3" y="4" width="26" height="24" fill="#000" stroke="#fff" stroke-width="1"/>
+    <rect x="5" y="6" width="22" height="19" fill="#000080"/>
+    <rect x="7" y="9" width="4" height="2" fill="#fff"/>
+    <rect x="9" y="11" width="4" height="2" fill="#fff"/>
+    <rect x="7" y="15" width="2" height="2" fill="#00ff00"/>
+    <rect x="10" y="15" width="12" height="2" fill="#00ff00"/>
+    <rect x="7" y="20" width="2" height="2" fill="#fff"/>
+    <rect x="10" y="20" width="8" height="2" fill="#fff"/>
+    <rect x="5" y="25" width="22" height="1" fill="#c0c0c0"/>
+  </svg>
+`);
+
+// ------------------------------------------------------------
+// RECYCLE BIN
+// ------------------------------------------------------------
+const recycleBinIcon = svgIcon(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+    <rect x="9" y="6" width="14" height="3" fill="#808080" stroke="#000" stroke-width="1"/>
+    <rect x="7" y="9" width="18" height="3" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
+    <path d="M10 12h12l-2 16H12z" fill="#c0c0c0" stroke="#000" stroke-width="2"/>
+    <rect x="13" y="15" width="2" height="10" fill="#808080"/>
+    <rect x="17" y="15" width="2" height="10" fill="#808080"/>
+    <rect x="12" y="28" width="9" height="2" fill="#000"/>
+  </svg>
+`);
+
+// ------------------------------------------------------------
+// NETWORK NEIGHBORHOOD
+// ------------------------------------------------------------
+const networkIcon = svgIcon(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+    <rect x="3" y="7" width="11" height="9" fill="#c0c0c0" stroke="#000" stroke-width="2"/>
+    <rect x="18" y="7" width="11" height="9" fill="#c0c0c0" stroke="#000" stroke-width="2"/>
+    <rect x="6" y="10" width="5" height="3" fill="#000080"/>
+    <rect x="21" y="10" width="5" height="3" fill="#000080"/>
+    <rect x="8" y="16" width="2" height="5" fill="#000"/>
+    <rect x="23" y="16" width="2" height="5" fill="#000"/>
+    <rect x="8" y="20" width="17" height="2" fill="#000"/>
+    <rect x="15" y="20" width="2" height="7" fill="#000"/>
+    <rect x="11" y="26" width="10" height="2" fill="#c0c0c0"/>
+  </svg>
+`);
+
+// ------------------------------------------------------------
+// INTERNET EXPLORER
+// ------------------------------------------------------------
+const ieIcon = svgIcon(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+    <circle cx="16" cy="16" r="13" fill="#000080" stroke="#000" stroke-width="1"/>
+    <path d="M5 14h20l-2 3H7z" fill="#ffff00"/>
+    <path d="M8 12c3-5 10-7 15-3l-2 3c-4-3-8-2-11 2z" fill="#00ffff"/>
+    <path d="M8 20c4 4 10 4 14 0l2 2c-5 6-14 6-19 0z" fill="#fff"/>
+    <rect x="13" y="12" width="7" height="2" fill="#ff0000"/>
+  </svg>
+`);
+
+// ------------------------------------------------------------
+// LUMA.EXE
+// ------------------------------------------------------------
+const lumaAiIcon = svgIcon(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+    <rect x="7" y="7" width="18" height="18" fill="#c0c0c0" stroke="#000" stroke-width="2"/>
+    <rect x="10" y="10" width="12" height="10" fill="#000080"/>
+    <rect x="12" y="12" width="3" height="3" fill="#00ffff"/>
+    <rect x="17" y="12" width="3" height="3" fill="#00ffff"/>
+    <rect x="13" y="17" width="6" height="2" fill="#fff"/>
+    <rect x="14" y="4" width="4" height="3" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
+    <rect x="4" y="12" width="3" height="5" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
+    <rect x="25" y="12" width="3" height="5" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
+    <rect x="11" y="25" width="3" height="3" fill="#000"/>
+    <rect x="18" y="25" width="3" height="3" fill="#000"/>
+  </svg>
+`);
+
+// ------------------------------------------------------------
+// SYSTEM MONITOR
+// ------------------------------------------------------------
+const sysMonitorIcon = svgIcon(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+    <rect x="4" y="4" width="24" height="19" fill="#c0c0c0" stroke="#000" stroke-width="2"/>
+    <rect x="7" y="7" width="18" height="13" fill="#000"/>
+    <rect x="9" y="17" width="2" height="2" fill="#00ff00"/>
+    <rect x="11" y="14" width="2" height="5" fill="#00ff00"/>
+    <rect x="13" y="16" width="2" height="3" fill="#00ff00"/>
+    <rect x="15" y="11" width="2" height="8" fill="#00ff00"/>
+    <rect x="17" y="13" width="2" height="6" fill="#00ff00"/>
+    <rect x="19" y="9" width="2" height="10" fill="#00ff00"/>
+    <rect x="21" y="12" width="2" height="7" fill="#00ff00"/>
+    <rect x="14" y="23" width="4" height="3" fill="#808080"/>
+    <rect x="10" y="26" width="12" height="2" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
+  </svg>
+`);
+
+// ------------------------------------------------------------
+// NOTEPAD
+// ------------------------------------------------------------
+const notepadIcon = svgIcon(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+    <path d="M6 2h15l5 5v23H6z" fill="#000"/>
+    <path d="M7 3h13l5 5v21H7z" fill="#fff"/>
+    <path d="M20 3v6h5" fill="#c0c0c0"/>
+    <rect x="10" y="13" width="12" height="2" fill="#000080"/>
+    <rect x="10" y="17" width="13" height="2" fill="#808080"/>
+    <rect x="10" y="21" width="11" height="2" fill="#808080"/>
+    <rect x="10" y="25" width="7" height="2" fill="#808080"/>
+  </svg>
+`);
+
+// ------------------------------------------------------------
+// PAINT
+// ------------------------------------------------------------
+const paintIcon = svgIcon(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+    <path d="M6 5h19v18H6z" fill="#000"/>
+    <path d="M7 6h17v16H7z" fill="#fff"/>
+    <rect x="9" y="8" width="4" height="4" fill="#ff0000"/>
+    <rect x="14" y="8" width="4" height="4" fill="#00aa00"/>
+    <rect x="19" y="8" width="3" height="4" fill="#0000ff"/>
+    <rect x="9" y="13" width="4" height="4" fill="#ffff00"/>
+    <rect x="14" y="13" width="4" height="4" fill="#ff00ff"/>
+    <rect x="19" y="13" width="3" height="4" fill="#00ffff"/>
+    <rect x="10" y="19" width="10" height="2" fill="#808080"/>
+    <path d="M20 22l7 7-3 1-7-7z" fill="#ffff00" stroke="#000" stroke-width="1"/>
+  </svg>
+`);
+
+// ------------------------------------------------------------
+// MINESWEEPER
+// ------------------------------------------------------------
+const minesweeperIcon = svgIcon(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+    <rect x="4" y="4" width="24" height="24" fill="#c0c0c0" stroke="#000" stroke-width="2"/>
+    <rect x="7" y="7" width="18" height="18" fill="#fff"/>
+    <rect x="10" y="10" width="4" height="4" fill="#808080"/>
+    <rect x="15" y="10" width="4" height="4" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
+    <rect x="20" y="10" width="4" height="4" fill="#808080"/>
+    <rect x="10" y="15" width="4" height="4" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
+    <circle cx="20" cy="19" r="4" fill="#000"/>
+    <rect x="18" y="13" width="4" height="3" fill="#000"/>
+    <rect x="18" y="23" width="4" height="3" fill="#000"/>
+    <rect x="13" y="17" width="3" height="4" fill="#000"/>
+    <rect x="24" y="17" width="3" height="4" fill="#000"/>
+    <rect x="19" y="17" width="2" height="2" fill="#fff"/>
+  </svg>
+`);
 
 function App() {
   const [systemApps, setSystemApps] = useState([]);
@@ -58,6 +308,12 @@ function App() {
 
   // --- BOOT SEQUENCE LOGIC ---
   useEffect(() => {
+    // Instantly skip to Desktop if session storage is already set
+    if (sessionStorage.getItem('vishal_os_splash_seen') === 'true') {
+      setBootState(3);
+      return;
+    }
+
     const biosLines = [
       "Award Modular BIOS v4.51PG, An Energy Star Ally",
       "Copyright (C) 1984-1998, Award Software, Inc.",
@@ -88,47 +344,38 @@ function App() {
           currentLine++;
         } else {
           clearInterval(interval);
-          setTimeout(() => setBootState(1), 1000);
+          setTimeout(() => setBootState(1), 800);
         }
       }, 80);
       return () => clearInterval(interval);
     }
+  }, [bootState]);
 
-    if (bootState === 1) {
-      playSound('boot');
-      const timer = setTimeout(() => {
-        setBootState(2);
-      }, 2500);
-      return () => clearTimeout(timer);
-    }
-  }, [bootState, playSound]);
-
-  // --- GLOBAL KEYBOARD HANDLERS FOR BOOT ---
+  // Handle BIOS Skip
   useEffect(() => {
     const handleGlobalKey = (e) => {
-      if (e.key === 'Enter') {
-        if (bootState < 2) {
-          setBootState(2);
-        } else if (bootState === 2) {
-          handleLogin();
-        }
+      if (e.key === 'Enter' && bootState === 0) {
+        setBootState(1);
       }
     };
     window.addEventListener('keydown', handleGlobalKey);
     return () => window.removeEventListener('keydown', handleGlobalKey);
   }, [bootState]);
 
+  // Handle System Reboot/Logoff events
   useEffect(() => {
     const handleSysShutdown = (e) => {
       if (e.detail === 'restart') {
         playSound('shutdown');
+        sessionStorage.removeItem('vishal_os_splash_seen');
         setBootText([]);
         setBootState(0);
       } else if (e.detail === 'shutdown') {
         playSound('shutdown');
         setBootState(4);
       } else if (e.detail === 'logoff') {
-        setBootState(2);
+        sessionStorage.removeItem('vishal_os_splash_seen');
+        setBootState(1);
       }
     };
     window.addEventListener('sys-shutdown', handleSysShutdown);
@@ -186,21 +433,14 @@ function App() {
       });
   }, []);
 
-  const handleLogin = () => {
-    playSound('startup');
-    setBootState(3);
-  };
-
-  const handleSkipBoot = () => {
-    if (bootState < 2) setBootState(2);
-  };
-
   const confirmShutdown = () => {
     setShowShutdown(false);
     if (shutdownChoice === 'logoff') {
-      setBootState(2); // Go to login
+      sessionStorage.removeItem('vishal_os_splash_seen');
+      setBootState(1); 
     } else if (shutdownChoice === 'restart') {
       playSound('shutdown');
+      sessionStorage.removeItem('vishal_os_splash_seen');
       setTimeout(() => {
         setBootText([]);
         setBootState(0);
@@ -219,8 +459,9 @@ function App() {
     >
       {isCrtMode && <div className="crt-overlay pointer-events-none z-[10001]"></div>}
 
+      {/* --- STATE 0: BIOS SCREEN --- */}
       {bootState === 0 && (
-        <div className="absolute inset-0 bg-black text-[#c0c0c0] font-mono text-sm md:text-lg p-4 md:p-6 z-[9999] overflow-hidden" onClick={handleSkipBoot}>
+        <div className="absolute inset-0 bg-black text-[#c0c0c0] font-mono text-sm md:text-lg p-4 md:p-6 z-[9999] overflow-hidden" onClick={() => setBootState(1)}>
           <div className="absolute top-4 right-4 md:top-6 md:right-6 border border-yellow-500 text-yellow-500 px-2 py-1 flex items-center gap-2">
             <span className="text-lg md:text-xl font-bold italic">EPA</span>
             <span className="text-[10px] md:text-xs uppercase leading-tight">Pollution<br />Preventer</span>
@@ -231,50 +472,15 @@ function App() {
         </div>
       )}
 
+      {/* --- STATE 1: SMART 90s SPLASH SCREEN --- */}
       {bootState === 1 && (
-        <div className="absolute inset-0 bg-black flex flex-col items-center justify-center z-[9999]" onClick={handleSkipBoot}>
-          <div className="text-3xl md:text-4xl font-sans font-bold text-os-white mb-8 tracking-widest italic">
-            VISHAL OS <span className="text-os-teal">98</span>
-          </div>
-          <div className="w-48 md:w-64 h-6 border-2 border-os-gray p-1">
-            <div className="h-full bg-os-navy w-1/2 animate-[slide_1.5s_infinite_linear]"></div>
-          </div>
-          <div className="absolute bottom-4 left-4 text-xs md:text-sm text-gray-600">Press ENTER or Click to skip</div>
-          <style>{`@keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }`}</style>
-        </div>
+        <SplashScreen 
+          apiUrl={API_BASE_URL} 
+          onComplete={() => setBootState(3)} 
+        />
       )}
 
-      {bootState === 2 && (
-        <div className="absolute inset-0 flex items-center justify-center z-[9998]" style={{ backgroundColor: bgTheme }}>
-          <div className="retro-window w-11/12 max-w-md shadow-retro-outset bg-os-gray border border-os-white mx-2">
-            <div className="retro-title-bar bg-blue-900 text-white font-dialog font-bold px-1 flex justify-between items-center">
-              <span>Welcome to Vishal OS</span>
-              <button className="retro-btn px-2 py-0 h-[18px] text-xs leading-none" onClick={handleLogin}>X</button>
-            </div>
-            <div className="p-3 md:p-4 flex flex-col sm:flex-row gap-4">
-              <div className="w-12 h-12 bg-os-navy flex items-center justify-center text-os-white font-bold text-xl shadow-retro-inset border border-os-dark-gray mx-auto sm:mx-0 shrink-0">
-                V
-              </div>
-              <div className="flex-1 w-full">
-                <p className="text-xs md:text-sm mb-4">Type a user name and password to log on to Windows.</p>
-                <div className="flex items-center mb-2">
-                  <label className="w-20 text-xs md:text-sm">User name:</label>
-                  <input type="text" className="retro-input flex-1 shadow-retro-inset border border-os-dark-gray px-1 focus:outline-none focus:bg-blue-900 focus:text-white min-w-0" defaultValue="GUEST" />
-                </div>
-                <div className="flex items-center">
-                  <label className="w-20 text-xs md:text-sm">Password:</label>
-                  <input type="password" autoFocus className="retro-input flex-1 shadow-retro-inset border border-os-dark-gray px-1 focus:outline-none focus:bg-blue-900 focus:text-white min-w-0" />
-                </div>
-              </div>
-            </div>
-            <div className="bg-os-gray p-2 border-t border-os-dark-gray flex justify-end gap-2 shadow-retro-inset">
-              <button className="retro-btn focus:ring-1 focus:ring-black outline-none w-20 text-xs py-1" onClick={handleLogin}>OK</button>
-              <button className="retro-btn focus:ring-1 focus:ring-black outline-none w-20 text-xs py-1" onClick={handleLogin}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
-
+      {/* --- STATE 3: OS DESKTOP ENVIRONMENT --- */}
       {bootState === 3 && (
         <>
           <SystemDialog />
