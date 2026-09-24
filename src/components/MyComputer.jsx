@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
 import { useSound } from '../hooks/useSound';
 import { showSystemDialog } from './SystemDialog';
+import { floppyIcon, hardDriveIcon, cdIcon, settingsIcon, networkIcon, recycleBinIcon } from '../utils/icons';
 
 const MyComputer = ({ onOpenApp }) => {
   const [selectedId, setSelectedId] = useState(null);
   const { playSound } = useSound();
 
   const drives = [
-    { id: 'drive-a', name: '3½ Floppy (A:)', icon: '💾', type: 'drive' },
-    { id: 'drive-c', name: 'Local Disk (C:)', icon: '🖴', type: 'drive', target: 'file-explorer' },
-    { id: 'drive-d', name: 'CD-ROM (D:)', icon: '💿', type: 'drive' },
-    { id: 'settings', name: 'Control Panel', icon: '⚙️', type: 'system', target: 'settings' },
-    { id: 'network', name: 'Network Neighborhood', icon: '🌐', type: 'system', target: 'network' }, // <-- Make sure there is only ONE of these
-    { id: 'recycle', name: 'Recycle Bin', icon: '🗑️', type: 'system', target: 'recycle-bin' }
+    { id: 'drive-a', name: '3½ Floppy (A:)', icon: floppyIcon, type: 'drive' },
+    { id: 'drive-c', name: 'Local Disk (C:)', icon: hardDriveIcon, type: 'drive', target: 'file-explorer' },
+    { id: 'drive-d', name: 'CD-ROM (D:)', icon: cdIcon, type: 'drive' },
+    { id: 'settings', name: 'Control Panel', icon: settingsIcon, type: 'system', target: 'settings' },
+    { id: 'network', name: 'Network Neighborhood', icon: networkIcon, type: 'system', target: 'network' }, 
+    { id: 'recycle', name: 'Recycle Bin', icon: recycleBinIcon, type: 'system', target: 'recycle-bin' }
   ];
 
-const handleDoubleClick = (item) => {
+  const handleDoubleClick = (item) => {
     playSound('window-open');
     if (item.target) {
       onOpenApp(item.target);
@@ -54,13 +55,13 @@ const handleDoubleClick = (item) => {
               e.stopPropagation(); 
               handleDoubleClick(item); 
             }}
-            className="flex flex-col items-center justify-start p-2 cursor-default outline-none"
+            className="flex flex-col items-center justify-start p-2 cursor-default outline-none group"
           >
-            <div className="text-4xl mb-1 relative">
+            <div className="w-10 h-10 mb-1 relative flex items-center justify-center">
               {selectedId === item.id && (
                 <div className="absolute inset-0 bg-os-navy opacity-40 mix-blend-multiply pointer-events-none"></div>
               )}
-              {item.icon}
+              <img src={item.icon} alt="" className="w-8 h-8 object-contain" style={{ imageRendering: 'pixelated' }} />
             </div>
             <span className={`text-xs text-center leading-tight px-1 line-clamp-2 shadow-sm
               ${selectedId === item.id 

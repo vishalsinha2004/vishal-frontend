@@ -1,108 +1,82 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Draggable from 'react-draggable';
 import { useSound } from '../hooks/useSound';
+import { errorIcon, warningIcon, infoIcon } from '../utils/icons';
 
-// Global trigger function to avoid prop drilling and context overhead
+// Global Event Dispatcher
 export const showSystemDialog = (options) => {
-  window.dispatchEvent(new CustomEvent('sys-dialog', { detail: options }));
+  const event = new CustomEvent('show-system-dialog', { detail: options });
+  window.dispatchEvent(event);
 };
 
 const SystemDialog = () => {
-  const [dialogs, setDialogs] = useState([]);
+  const [dialog, setDialog] = useState(null);
   const { playSound } = useSound();
+  const nodeRef = useRef(null);
 
   useEffect(() => {
-    const handleDialog = (e) => {
-      const newDialog = { id: Date.now(), ...e.detail };
-      setDialogs((prev) => [...prev, newDialog]);
-
-      // Play appropriate sound based on dialog type
-      if (newDialog.type === 'error') playSound('error');
-      else if (newDialog.type === 'warning') playSound('warning');
-      else playSound('notification'); 
+    const handleShow = (e) => {
+      setDialog(e.detail);
+      if (e.detail.type === 'error') playSound('error');
+      else if (e.detail.type === 'warning') playSound('warning');
+      else playSound('notification');
     };
-
-    window.addEventListener('sys-dialog', handleDialog);
-    return () => window.removeEventListener('sys-dialog', handleDialog);
+    window.addEventListener('show-system-dialog', handleShow);
+    return () => window.removeEventListener('show-system-dialog', handleShow);
   }, [playSound]);
 
-  const closeDialog = (id) => {
-    setDialogs((prev) => prev.filter((d) => d.id !== id));
+  if (!dialog) return null;
+
+  const handleAction = (btn) => {
+    playSound('click');
+    if (dialog.onAction) dialog.onAction(btn);
+    setDialog(null);
   };
 
-  const handleBackdropClick = (e) => {
-    e.stopPropagation();
-    // Play the classic "Default Beep/Asterisk" when clicking outside a modal
-    playSound('error');
+  const getIcon = () => {
+    if (dialog.type === 'error') return errorIcon;
+    if (dialog.type === 'warning') return warningIcon;
+    return infoIcon;
   };
-
-  if (dialogs.length === 0) return null;
 
   return (
-    <>
-      {dialogs.map((dialog) => (
-        <div key={dialog.id} className="fixed inset-0 z-[10000] flex items-center justify-center pointer-events-auto">
-          {/* Modal Backdrop - Captures clicks to prevent background interaction */}
-          <div className="absolute inset-0 bg-transparent" onClick={handleBackdropClick}></div>
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center pointer-events-auto">
+      {/* Invisible backdrop to catch clicks outside the dialog */}
+      <div className="absolute inset-0" onClick={() => playSound('error')}></div>
+      
+      <Draggable nodeRef={nodeRef} handle=".dialog-title-bar" bounds="parent">
+        <div ref={nodeRef} className="retro-window w-[320px] shadow-retro-outset bg-os-gray border border-os-white relative z-10 font-sans">
           
-          {/* Dialog Window */}
-          <div className="retro-window min-w-[300px] max-w-[400px] shadow-retro-outset bg-os-gray border border-os-white relative z-10">
-            {/* Title Bar */}
-            <div className="retro-title-bar bg-blue-900 text-white font-dialog font-bold px-1 flex justify-between items-center select-none cursor-default">
-              <span>{dialog.title || 'Vishal OS'}</span>
-              <button 
-                className="retro-btn px-2 py-0 h-[18px] text-xs leading-none text-black bg-os-gray" 
-                onClick={() => closeDialog(dialog.id)}
-              >
-                X
-              </button>
+          <div className="dialog-title-bar bg-[#000080] text-white font-dialog font-bold px-1 flex justify-between items-center cursor-move select-none text-sm">
+            <span>{dialog.title || 'Vishal OS'}</span>
+            <button className="retro-btn px-2 py-0 h-[18px] text-xs leading-none text-black bg-os-gray font-bold shadow-retro-outset" onClick={() => handleAction('Close')}>
+              X
+            </button>
+          </div>
+          
+          <div className="p-4 flex gap-4 items-start">
+            <div className="w-8 h-8 shrink-0">
+              <img src={getIcon()} alt={dialog.type} className="w-full h-full object-contain" style={{ imageRendering: 'pixelated' }} />
             </div>
-            
-            {/* Content */}
-            <div className="p-4 flex items-start gap-4">
-              {/* Retro Icon Generators */}
-              {dialog.type === 'error' && (
-                <div className="w-8 h-8 shrink-0 rounded-full bg-red-600 border-2 border-white flex items-center justify-center text-white font-bold text-xl select-none shadow-retro-outset leading-none">X</div>
-              )}
-              {dialog.type === 'warning' && (
-                <div className="w-8 h-8 shrink-0 bg-transparent border-[16px] border-transparent border-b-yellow-400 relative top-[-8px] shadow-retro-outset">
-                  <span className="absolute top-[2px] left-[-4px] font-bold text-black text-sm">!</span>
-                </div>
-              )}
-              {(dialog.type === 'info' || dialog.type === 'success' || !dialog.type) && (
-                <div className="w-8 h-8 shrink-0 rounded-full bg-blue-600 border-2 border-white flex items-center justify-center text-white font-bold text-xl select-none shadow-retro-outset leading-none">i</div>
-              )}
-              {dialog.type === 'question' && (
-                <div className="w-8 h-8 shrink-0 rounded-full bg-blue-600 border-2 border-white flex items-center justify-center text-white font-bold text-xl select-none shadow-retro-outset leading-none">?</div>
-              )}
-
-              {/* Message */}
-              <div className="flex-1 font-sans text-sm text-os-text mt-1 whitespace-pre-wrap">
-                {dialog.message}
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="p-3 flex justify-center gap-4 mt-2">
-              {(dialog.buttons || ['OK']).map((btnText, i) => (
-                <button 
-                  key={i} 
-                  className="retro-btn w-20 py-1 font-sans text-sm focus:ring-1 focus:ring-black focus:outline-none"
-                  onClick={() => {
-                    playSound('click');
-                    if (dialog.onConfirm && btnText !== 'Cancel' && btnText !== 'No') {
-                      dialog.onConfirm();
-                    }
-                    closeDialog(dialog.id);
-                  }}
-                >
-                  {btnText}
-                </button>
-              ))}
+            <div className="flex-1 text-sm text-os-text mt-1 leading-snug break-words">
+              {dialog.message}
             </div>
           </div>
+          
+          <div className="bg-os-gray p-2 flex justify-center gap-2 mt-2 border-t border-os-dark-gray shadow-retro-inset">
+            {dialog.buttons?.map((btn) => (
+              <button 
+                key={btn} 
+                className="retro-btn w-20 py-1 text-xs focus:ring-1 focus:ring-black outline-none font-bold active:shadow-retro-inset shadow-retro-outset" 
+                onClick={() => handleAction(btn)}
+              >
+                {btn}
+              </button>
+            ))}
+          </div>
         </div>
-      ))}
-    </>
+      </Draggable>
+    </div>
   );
 };
 

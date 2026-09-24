@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSound } from '../hooks/useSound';
-import { resolvePath } from '../services/virtualFileSystem'; // <-- NEW IMPORT
 
-const CommandPrompt = ({ onOpenApp, onCloseApp, systemApps, isCrtMode, setIsCrtMode }) => {
+const CommandPrompt = ({ onOpenApp, onCloseApp, systemApps, isCrtMode, setIsCrtMode, fsApi }) => {
   const [history, setHistory] = useState([
     "Microsoft(R) Windows 98",
     "   (C)Copyright Microsoft Corp 1981-1998.",
@@ -13,11 +12,12 @@ const CommandPrompt = ({ onOpenApp, onCloseApp, systemApps, isCrtMode, setIsCrtM
   const [input, setInput] = useState('');
   const [cmdHistory, setCmdHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
-  const [path, setPath] = useState("C:\\VISHAL");
+  const [path, setPath] = useState("C:\\");
   
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
   const { playSound } = useSound();
+  const { resolvePath } = fsApi;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "auto" });
@@ -30,10 +30,8 @@ const CommandPrompt = ({ onOpenApp, onCloseApp, systemApps, isCrtMode, setIsCrtM
   const executeCommand = (cmdStr) => {
     const args = cmdStr.trim().split(/\s+/);
     const cmd = args[0].toLowerCase();
-    
     playSound('typing');
     
-    // Check if the user is just typing a filename in the current directory to execute it
     const currentDirNode = resolvePath(path);
     if (currentDirNode && currentDirNode[args[0].toUpperCase()] && currentDirNode[args[0].toUpperCase()].type === 'file') {
        const fileNode = currentDirNode[args[0].toUpperCase()];
@@ -95,7 +93,7 @@ const CommandPrompt = ({ onOpenApp, onCloseApp, systemApps, isCrtMode, setIsCrtM
         ];
 
         let fileCount = 0;
-        let dirCount = 2; // For . and ..
+        let dirCount = 2; 
         let totalBytes = 0;
 
         Object.keys(dirNode).forEach(key => {
@@ -105,10 +103,7 @@ const CommandPrompt = ({ onOpenApp, onCloseApp, systemApps, isCrtMode, setIsCrtM
             dirOutput.push(`10-23-98  11:38 PM    <DIR>          ${key}`);
           } else {
             fileCount++;
-            totalBytes += item.size;
-            // Pad size to right align like classic DOS
-            const sizeStr = item.size.toLocaleString().padStart(14, ' ');
-            dirOutput.push(`${item.date}  ${item.time} ${sizeStr} ${key}`);
+            dirOutput.push(`10-23-98  11:38 PM               1kb ${key}`);
           }
         });
 
@@ -140,8 +135,10 @@ const CommandPrompt = ({ onOpenApp, onCloseApp, systemApps, isCrtMode, setIsCrtM
         } else {
           // Check if directory exists relative to current path
           const checkNode = resolvePath(path);
-          if (checkNode && checkNode[target] && checkNode[target].type === 'dir') {
-            setPath(`${path === 'C:\\' ? 'C:' : path}\\${target}`);
+          // Look dynamically for matching key regardless of strict case
+          const foundKey = Object.keys(checkNode).find(k => k.toUpperCase() === target);
+          if (foundKey && checkNode[foundKey].type === 'dir') {
+            setPath(`${path === 'C:\\' ? 'C:' : path}\\${foundKey}`);
             print([]);
           } else {
             print(["Invalid directory."]);
@@ -298,25 +295,27 @@ const CommandPrompt = ({ onOpenApp, onCloseApp, systemApps, isCrtMode, setIsCrtM
 
   return (
     <div 
-      className="h-full w-full bg-black text-[#c0c0c0] font-terminal text-sm p-2 overflow-y-auto cursor-text shadow-retro-inset border border-os-dark-gray"
+      className="h-full w-full bg-black text-[#c0c0c0] font-terminal text-sm p-2 overflow-y-auto cursor-text shadow-retro-inset border border-os-dark-gray flex flex-col"
       onClick={() => inputRef.current?.focus()}
     >
-      {history.map((line, i) => (
-        <div key={i} className="whitespace-pre-wrap leading-tight min-h-[1em]">{line}</div>
-      ))}
-      <div className="flex mt-1">
-        <span className="mr-1">{path}&gt;</span>
-        <input
-          ref={inputRef}
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          className="flex-1 bg-transparent text-[#c0c0c0] outline-none border-none font-terminal leading-tight"
-          autoFocus
-          spellCheck="false"
-          autoComplete="off"
-        />
+      <div className="flex-1">
+        {history.map((line, i) => (
+          <div key={i} className="whitespace-pre-wrap leading-tight min-h-[1em]">{line}</div>
+        ))}
+        <div className="flex mt-1">
+          <span className="mr-1">{path}&gt;</span>
+          <input
+            ref={inputRef}
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="flex-1 bg-transparent text-[#c0c0c0] outline-none border-none font-terminal leading-tight"
+            autoFocus
+            spellCheck="false"
+            autoComplete="off"
+          />
+        </div>
       </div>
       <div ref={bottomRef}></div>
     </div>

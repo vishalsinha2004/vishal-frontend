@@ -10,282 +10,24 @@ import SplashScreen from './components/SplashScreen'; // <-- NEW IMPORT
 import { useWindowManager } from './hooks/useWindowManager';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useSound } from './hooks/useSound';
+import { 
+  systemOsIcon, aboutUsIcon, settingsIcon, folderIcon, fileExplorerIcon, 
+  resumeIcon, gamesFolderIcon, ticTacToeIcon, problemSolverIcon, recycleBinIcon, 
+  networkIcon, ieIcon, lumaAiIcon, sysMonitorIcon, notepadIcon, paintIcon, minesweeperIcon 
+} from './utils/icons';
 
+import { useFileSystem } from './hooks/useFileSystem';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
 
-const svgIcon = (svg) =>
-  `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-// --- RETRO PIXEL ICONS ---
-// ------------------------------------------------------------
-// MY COMPUTER
-// ------------------------------------------------------------
-const systemOsIcon = svgIcon(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-    <rect x="5" y="4" width="22" height="17" fill="#c0c0c0" stroke="#000" stroke-width="2"/>
-    <rect x="8" y="7" width="16" height="11" fill="#000080"/>
-    <rect x="10" y="9" width="12" height="7" fill="#008080"/>
-    <rect x="14" y="21" width="4" height="3" fill="#808080"/>
-    <rect x="10" y="24" width="12" height="3" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
-    <rect x="8" y="27" width="16" height="2" fill="#000"/>
-  </svg>
-`);
 
-// ------------------------------------------------------------
-// ABOUT VISHAL
-// ------------------------------------------------------------
-const aboutUsIcon = svgIcon(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-    <rect x="6" y="3" width="20" height="26" fill="#fff" stroke="#000" stroke-width="2"/>
-    <rect x="9" y="6" width="14" height="8" fill="#000080"/>
-    <rect x="13" y="8" width="6" height="4" fill="#c0c0c0"/>
-    <rect x="10" y="17" width="12" height="2" fill="#000080"/>
-    <rect x="10" y="21" width="9" height="2" fill="#808080"/>
-    <rect x="10" y="25" width="12" height="2" fill="#808080"/>
-  </svg>
-`);
-
-// ------------------------------------------------------------
-// CONTROL PANEL
-// ------------------------------------------------------------
-const settingsIcon = svgIcon(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-    <rect x="4" y="4" width="24" height="24" fill="#c0c0c0" stroke="#000" stroke-width="2"/>
-    <rect x="8" y="8" width="16" height="4" fill="#000080"/>
-    <rect x="8" y="14" width="16" height="4" fill="#fff" stroke="#808080" stroke-width="1"/>
-    <rect x="8" y="20" width="16" height="4" fill="#fff" stroke="#808080" stroke-width="1"/>
-    <rect x="10" y="15" width="4" height="2" fill="#000080"/>
-    <rect x="18" y="21" width="4" height="2" fill="#000080"/>
-  </svg>
-`);
-
-// ------------------------------------------------------------
-// CLOSED FOLDER
-// ------------------------------------------------------------
-const folderIcon = svgIcon(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-    <path d="M3 8h10l3 3h13v15H3z" fill="#000" />
-    <path d="M4 7h9l3 3h12v14H4z" fill="#ffff00"/>
-    <rect x="4" y="11" width="24" height="2" fill="#c0c000"/>
-    <rect x="5" y="23" width="22" height="2" fill="#808000"/>
-  </svg>
-`);
-
-// ------------------------------------------------------------
-// FILE EXPLORER — OPEN FOLDER
-// ------------------------------------------------------------
-const fileExplorerIcon = svgIcon(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-    <path d="M3 8h9l3 3h14v15H3z" fill="#000"/>
-    <path d="M4 7h8l3 3h13v14H4z" fill="#ffff00"/>
-    <path d="M5 12h23l-4 12H5z" fill="#ffd700"/>
-    <rect x="5" y="22" width="18" height="2" fill="#808000"/>
-    <rect x="15" y="10" width="12" height="2" fill="#c0c000"/>
-  </svg>
-`);
-
-// ------------------------------------------------------------
-// RESUME / DOCUMENT
-// ------------------------------------------------------------
-const resumeIcon = svgIcon(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-    <path d="M7 3h14l5 5v21H7z" fill="#000"/>
-    <path d="M8 4h12l5 5v19H8z" fill="#fff"/>
-    <path d="M20 4v6h6" fill="#c0c0c0"/>
-    <rect x="11" y="13" width="12" height="2" fill="#000080"/>
-    <rect x="11" y="17" width="10" height="2" fill="#808080"/>
-    <rect x="11" y="21" width="12" height="2" fill="#808080"/>
-    <rect x="11" y="25" width="7" height="2" fill="#808080"/>
-  </svg>
-`);
-
-// ------------------------------------------------------------
-// GAMES FOLDER
-// ------------------------------------------------------------
-const gamesFolderIcon = svgIcon(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-    <path d="M3 8h10l3 3h13v15H3z" fill="#000"/>
-    <path d="M4 7h9l3 3h12v14H4z" fill="#ffff00"/>
-    <rect x="5" y="13" width="22" height="9" fill="#000080"/>
-    <rect x="9" y="16" width="6" height="2" fill="#fff"/>
-    <rect x="11" y="14" width="2" height="6" fill="#fff"/>
-    <rect x="19" y="15" width="2" height="2" fill="#fff"/>
-    <rect x="22" y="18" width="2" height="2" fill="#fff"/>
-  </svg>
-`);
-
-// ------------------------------------------------------------
-// TIC TAC TOE
-// ------------------------------------------------------------
-const ticTacToeIcon = svgIcon(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-    <rect x="4" y="4" width="24" height="24" fill="#c0c0c0" stroke="#000" stroke-width="2"/>
-    <rect x="8" y="8" width="16" height="16" fill="#fff"/>
-    <rect x="13" y="8" width="2" height="16" fill="#000080"/>
-    <rect x="19" y="8" width="2" height="16" fill="#000080"/>
-    <rect x="8" y="13" width="16" height="2" fill="#000080"/>
-    <rect x="8" y="19" width="16" height="2" fill="#000080"/>
-    <rect x="9" y="9" width="3" height="3" fill="#ff0000"/>
-    <rect x="21" y="21" width="3" height="3" fill="#0000ff"/>
-  </svg>
-`);
-
-// ------------------------------------------------------------
-// MS-DOS PROMPT
-// ------------------------------------------------------------
-const problemSolverIcon = svgIcon(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-    <rect x="3" y="4" width="26" height="24" fill="#000" stroke="#fff" stroke-width="1"/>
-    <rect x="5" y="6" width="22" height="19" fill="#000080"/>
-    <rect x="7" y="9" width="4" height="2" fill="#fff"/>
-    <rect x="9" y="11" width="4" height="2" fill="#fff"/>
-    <rect x="7" y="15" width="2" height="2" fill="#00ff00"/>
-    <rect x="10" y="15" width="12" height="2" fill="#00ff00"/>
-    <rect x="7" y="20" width="2" height="2" fill="#fff"/>
-    <rect x="10" y="20" width="8" height="2" fill="#fff"/>
-    <rect x="5" y="25" width="22" height="1" fill="#c0c0c0"/>
-  </svg>
-`);
-
-// ------------------------------------------------------------
-// RECYCLE BIN
-// ------------------------------------------------------------
-const recycleBinIcon = svgIcon(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-    <rect x="9" y="6" width="14" height="3" fill="#808080" stroke="#000" stroke-width="1"/>
-    <rect x="7" y="9" width="18" height="3" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
-    <path d="M10 12h12l-2 16H12z" fill="#c0c0c0" stroke="#000" stroke-width="2"/>
-    <rect x="13" y="15" width="2" height="10" fill="#808080"/>
-    <rect x="17" y="15" width="2" height="10" fill="#808080"/>
-    <rect x="12" y="28" width="9" height="2" fill="#000"/>
-  </svg>
-`);
-
-// ------------------------------------------------------------
-// NETWORK NEIGHBORHOOD
-// ------------------------------------------------------------
-const networkIcon = svgIcon(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-    <rect x="3" y="7" width="11" height="9" fill="#c0c0c0" stroke="#000" stroke-width="2"/>
-    <rect x="18" y="7" width="11" height="9" fill="#c0c0c0" stroke="#000" stroke-width="2"/>
-    <rect x="6" y="10" width="5" height="3" fill="#000080"/>
-    <rect x="21" y="10" width="5" height="3" fill="#000080"/>
-    <rect x="8" y="16" width="2" height="5" fill="#000"/>
-    <rect x="23" y="16" width="2" height="5" fill="#000"/>
-    <rect x="8" y="20" width="17" height="2" fill="#000"/>
-    <rect x="15" y="20" width="2" height="7" fill="#000"/>
-    <rect x="11" y="26" width="10" height="2" fill="#c0c0c0"/>
-  </svg>
-`);
-
-// ------------------------------------------------------------
-// INTERNET EXPLORER
-// ------------------------------------------------------------
-const ieIcon = svgIcon(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-    <circle cx="16" cy="16" r="13" fill="#000080" stroke="#000" stroke-width="1"/>
-    <path d="M5 14h20l-2 3H7z" fill="#ffff00"/>
-    <path d="M8 12c3-5 10-7 15-3l-2 3c-4-3-8-2-11 2z" fill="#00ffff"/>
-    <path d="M8 20c4 4 10 4 14 0l2 2c-5 6-14 6-19 0z" fill="#fff"/>
-    <rect x="13" y="12" width="7" height="2" fill="#ff0000"/>
-  </svg>
-`);
-
-// ------------------------------------------------------------
-// LUMA.EXE
-// ------------------------------------------------------------
-const lumaAiIcon = svgIcon(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-    <rect x="7" y="7" width="18" height="18" fill="#c0c0c0" stroke="#000" stroke-width="2"/>
-    <rect x="10" y="10" width="12" height="10" fill="#000080"/>
-    <rect x="12" y="12" width="3" height="3" fill="#00ffff"/>
-    <rect x="17" y="12" width="3" height="3" fill="#00ffff"/>
-    <rect x="13" y="17" width="6" height="2" fill="#fff"/>
-    <rect x="14" y="4" width="4" height="3" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
-    <rect x="4" y="12" width="3" height="5" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
-    <rect x="25" y="12" width="3" height="5" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
-    <rect x="11" y="25" width="3" height="3" fill="#000"/>
-    <rect x="18" y="25" width="3" height="3" fill="#000"/>
-  </svg>
-`);
-
-// ------------------------------------------------------------
-// SYSTEM MONITOR
-// ------------------------------------------------------------
-const sysMonitorIcon = svgIcon(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-    <rect x="4" y="4" width="24" height="19" fill="#c0c0c0" stroke="#000" stroke-width="2"/>
-    <rect x="7" y="7" width="18" height="13" fill="#000"/>
-    <rect x="9" y="17" width="2" height="2" fill="#00ff00"/>
-    <rect x="11" y="14" width="2" height="5" fill="#00ff00"/>
-    <rect x="13" y="16" width="2" height="3" fill="#00ff00"/>
-    <rect x="15" y="11" width="2" height="8" fill="#00ff00"/>
-    <rect x="17" y="13" width="2" height="6" fill="#00ff00"/>
-    <rect x="19" y="9" width="2" height="10" fill="#00ff00"/>
-    <rect x="21" y="12" width="2" height="7" fill="#00ff00"/>
-    <rect x="14" y="23" width="4" height="3" fill="#808080"/>
-    <rect x="10" y="26" width="12" height="2" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
-  </svg>
-`);
-
-// ------------------------------------------------------------
-// NOTEPAD
-// ------------------------------------------------------------
-const notepadIcon = svgIcon(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-    <path d="M6 2h15l5 5v23H6z" fill="#000"/>
-    <path d="M7 3h13l5 5v21H7z" fill="#fff"/>
-    <path d="M20 3v6h5" fill="#c0c0c0"/>
-    <rect x="10" y="13" width="12" height="2" fill="#000080"/>
-    <rect x="10" y="17" width="13" height="2" fill="#808080"/>
-    <rect x="10" y="21" width="11" height="2" fill="#808080"/>
-    <rect x="10" y="25" width="7" height="2" fill="#808080"/>
-  </svg>
-`);
-
-// ------------------------------------------------------------
-// PAINT
-// ------------------------------------------------------------
-const paintIcon = svgIcon(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-    <path d="M6 5h19v18H6z" fill="#000"/>
-    <path d="M7 6h17v16H7z" fill="#fff"/>
-    <rect x="9" y="8" width="4" height="4" fill="#ff0000"/>
-    <rect x="14" y="8" width="4" height="4" fill="#00aa00"/>
-    <rect x="19" y="8" width="3" height="4" fill="#0000ff"/>
-    <rect x="9" y="13" width="4" height="4" fill="#ffff00"/>
-    <rect x="14" y="13" width="4" height="4" fill="#ff00ff"/>
-    <rect x="19" y="13" width="3" height="4" fill="#00ffff"/>
-    <rect x="10" y="19" width="10" height="2" fill="#808080"/>
-    <path d="M20 22l7 7-3 1-7-7z" fill="#ffff00" stroke="#000" stroke-width="1"/>
-  </svg>
-`);
-
-// ------------------------------------------------------------
-// MINESWEEPER
-// ------------------------------------------------------------
-const minesweeperIcon = svgIcon(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-    <rect x="4" y="4" width="24" height="24" fill="#c0c0c0" stroke="#000" stroke-width="2"/>
-    <rect x="7" y="7" width="18" height="18" fill="#fff"/>
-    <rect x="10" y="10" width="4" height="4" fill="#808080"/>
-    <rect x="15" y="10" width="4" height="4" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
-    <rect x="20" y="10" width="4" height="4" fill="#808080"/>
-    <rect x="10" y="15" width="4" height="4" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
-    <circle cx="20" cy="19" r="4" fill="#000"/>
-    <rect x="18" y="13" width="4" height="3" fill="#000"/>
-    <rect x="18" y="23" width="4" height="3" fill="#000"/>
-    <rect x="13" y="17" width="3" height="4" fill="#000"/>
-    <rect x="24" y="17" width="3" height="4" fill="#000"/>
-    <rect x="19" y="17" width="2" height="2" fill="#fff"/>
-  </svg>
-`);
 
 function App() {
   const [systemApps, setSystemApps] = useState([]);
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
   const [bootState, setBootState] = useState(0);
   const [bootText, setBootText] = useState([]);
+  const fsApi = useFileSystem(systemApps);
 
   // -- SHUTDOWN MODAL STATES --
   const [showShutdown, setShowShutdown] = useState(false);
@@ -498,6 +240,8 @@ function App() {
             <Window
               key={app.id}
               app={app}
+              fsApi={fsApi} // <--- ADD THIS
+              isActive={activeWindowId === app.id}
               onClose={() => closeApp(app.id)}
               onCloseApp={closeApp}
               onOpenApp={(id) => openApp(systemApps.find(a => a.id === id))}

@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useSound } from './useSound';
-import { useLocalStorage } from './useLocalStorage'; // <-- ADDED
+import { useLocalStorage } from './useLocalStorage';
 
 export function useWindowManager() {
   const [windows, setWindows] = useLocalStorage('vishal_os_windows', []);
@@ -9,53 +9,54 @@ export function useWindowManager() {
   const { playSound } = useSound();
 
   const openWindow = useCallback((app) => {
-    setWindows((prev) => {
-      const exists = prev.find((w) => w.id === app.id);
-      if (exists) {
+    setHighestZIndex((currentZ) => {
+      const newZ = currentZ + 1;
+      setWindows((prev) => {
+        const exists = prev.find((w) => w.id === app.id);
+        if (exists) {
+          playSound('window-open');
+          setActiveWindowId(app.id);
+          // Ensure it restores and comes to front if minimized
+          return prev.map((w) => w.id === app.id ? { ...w, isMinimized: false, zIndex: newZ } : w);
+        }
+
         playSound('window-open');
         setActiveWindowId(app.id);
-        setHighestZIndex((z) => z + 1);
-        return prev.map((w) =>
-          w.id === app.id
-            ? { ...w, isMinimized: false, zIndex: highestZIndex + 1 }
-            : w
-        );
-      }
-
-      playSound('window-open');
-      setHighestZIndex((z) => z + 1);
-      setActiveWindowId(app.id);
-
-      // Cascading default position to prevent overlapping
-      const offset = (prev.length * 20) % 200;
-
-      return [
-        ...prev,
-        {
-          ...app,
-          isMinimized: false,
-          isMaximized: false,
-          zIndex: highestZIndex + 1,
-          position: { x: 50 + offset, y: 50 + offset },
-          size: { width: 800, height: 600 }
-        }
-      ];
+        // Safe cascading position logic
+        const openCount = prev.length;
+        const offset = (openCount * 25) % 200;
+        return [
+          ...prev,
+          {
+            ...app,
+            isMinimized: false,
+            isMaximized: false,
+            zIndex: newZ,
+            position: { x: 50 + offset, y: 50 + offset },
+            size: { width: 800, height: 600 }
+          }
+        ];
+      });
+      return newZ;
     });
-  }, [highestZIndex, playSound]);
+  }, [playSound, setHighestZIndex, setWindows, setActiveWindowId]);
 
   const closeWindow = useCallback((id) => {
     playSound('window-close');
     setWindows((prev) => prev.filter((w) => w.id !== id));
     setActiveWindowId((prevActive) => (prevActive === id ? null : prevActive));
-  }, [playSound]);
+  }, [playSound, setWindows, setActiveWindowId]);
 
   const focusWindow = useCallback((id) => {
-    setHighestZIndex((z) => z + 1);
-    setActiveWindowId(id);
-    setWindows((prev) =>
-      prev.map((w) => (w.id === id ? { ...w, zIndex: highestZIndex + 1 } : w))
-    );
-  }, [highestZIndex]);
+    setHighestZIndex((currentZ) => {
+      const newZ = currentZ + 1;
+      setActiveWindowId(id);
+      setWindows((prev) =>
+        prev.map((w) => (w.id === id ? { ...w, zIndex: newZ, isMinimized: false } : w))
+      );
+      return newZ;
+    });
+  }, [setHighestZIndex, setActiveWindowId, setWindows]);
 
   const minimizeWindow = useCallback((id) => {
     playSound('window-minimize');
@@ -63,23 +64,27 @@ export function useWindowManager() {
       prev.map((w) => (w.id === id ? { ...w, isMinimized: true } : w))
     );
     setActiveWindowId((prevActive) => (prevActive === id ? null : prevActive));
-  }, [playSound]);
+  }, [playSound, setWindows, setActiveWindowId]);
 
   const toggleMaximize = useCallback((id) => {
     playSound('window-maximize');
-    setWindows((prev) =>
-      prev.map((w) =>
-        w.id === id ? { ...w, isMaximized: !w.isMaximized } : w
-      )
-    );
-    focusWindow(id);
-  }, [focusWindow, playSound]);
+    setHighestZIndex((currentZ) => {
+      const newZ = currentZ + 1;
+      setActiveWindowId(id);
+      setWindows((prev) =>
+        prev.map((w) =>
+          w.id === id ? { ...w, isMaximized: !w.isMaximized, zIndex: newZ, isMinimized: false } : w
+        )
+      );
+      return newZ;
+    });
+  }, [playSound, setHighestZIndex, setActiveWindowId, setWindows]);
 
   const updateWindowPosition = useCallback((id, position) => {
     setWindows((prev) =>
       prev.map((w) => (w.id === id ? { ...w, position } : w))
     );
-  }, []);
+  }, [setWindows]);
 
   return {
     windows,

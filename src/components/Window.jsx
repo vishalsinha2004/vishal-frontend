@@ -19,6 +19,7 @@ import SystemMonitor from './SystemMonitor'; // <-- ADD THIS
 import Notepad from './Notepad'; // <-- ADD THIS
 import Paint from './Paint'; // <-- ADD THIS
 import Minesweeper from './Minesweeper'; // <-- ADD THIS
+import { showSystemDialog } from './SystemDialog';
 // --- Dynamic System OS Component ---
 const SystemOSView = ({ apiUrl }) => {
   const [sysInfo, setSysInfo] = useState([]);
@@ -99,6 +100,8 @@ const parseTechStack = (stackStr) => {
 // --- MAIN WINDOW COMPONENT ---
 const Window = ({
   app,
+  isActive,
+  fsApi,
   onClose,
   onOpenApp,
   systemApps,
@@ -140,7 +143,7 @@ const Window = ({
     setTitleMenu({ visible: true, x: e.clientX, y: e.clientY });
   };
 
-useEffect(() => {
+  useEffect(() => {
     const sysApps = ['settings', 'system-os', 'about-us', 'projects-folder', 'games-folder', 'file-explorer', 'resume', 'tic-tac-toe', 'problem-solver'];
     if (sysApps.includes(app.id) || app.name.toLowerCase() === 'about vishal') return;
 
@@ -187,11 +190,11 @@ useEffect(() => {
   const renderFileList = (files) => {
     if (githubLoading) return <div className="text-os-text text-xs p-2">Loading...</div>;
     if (githubError) return <div className="text-os-text text-xs p-2">{githubError}</div>;
-    
+
     // Updated empty state message
     if (files.length === 0) return (
       <div className="text-os-dark-gray text-xs p-2 italic bg-white shadow-retro-inset border border-os-dark-gray h-[150px] flex items-center justify-center text-center px-4">
-        Cannot display files.<br/>This repository is either private, empty, or unreachable.
+        Cannot display files.<br />This repository is either private, empty, or unreachable.
       </div>
     );
 
@@ -209,7 +212,7 @@ useEffect(() => {
 
   const renderAppContent = () => {
     // Inside renderAppContent():
-    if (app.id === 'recycle-bin' || app.id === 'recycle') return <RecycleBin />;
+    if (app.id === 'recycle-bin' || app.id === 'recycle') return <RecycleBin fsApi={fsApi} onOpenApp={onOpenApp} />; // <--- UPDATE
 
     // ADD THIS LINE:
     if (app.id === 'settings') {
@@ -262,7 +265,7 @@ useEffect(() => {
       return <ProjectPage apps={projectApps} onOpenApp={onOpenApp} />;
     }
 
-    if (app.id === 'file-explorer') return <FileExplorer systemApps={systemApps} onOpenApp={onOpenApp} />;
+    if (app.id === 'file-explorer') return <FileExplorer fsApi={fsApi} systemApps={systemApps} onOpenApp={onOpenApp} />; // <--- UPDATE
 
     const techTags = parseTechStack(app.tech_stack);
 
@@ -348,13 +351,14 @@ useEffect(() => {
           }}
           className={`absolute flex flex-col retro-window shadow-retro-outset border border-os-dark-gray bg-os-gray
         ${app.isMaximized
-              ? 'w-full h-[calc(100vh-30px)] !transform-none top-0 left-0'
-              : 'w-[95vw] sm:w-[85vw] md:w-[800px] h-[85vh] md:h-[600px] max-w-full max-h-[calc(100vh-30px)]'
+              ? 'w-[100vw] h-[calc(100vh-32px)] !transform-none top-0 left-0'
+              : 'w-[95vw] md:w-[800px] h-[85vh] md:h-[600px] max-w-[100vw] max-h-[calc(100vh-32px)]'
             }`}
         >
           {/* TITLE BAR WITH RIGHT-CLICK HANDLER */}
           <div
-            className="retro-title-bar cursor-move select-none bg-blue-900 text-white flex justify-between items-center px-1 font-dialog font-bold text-sm"
+            className={`retro-title-bar cursor-move select-none flex justify-between items-center px-1 font-dialog font-bold text-sm
+              ${isActive ? 'bg-[#000080] text-white' : 'bg-[#808080] text-[#c0c0c0]'}`}
             onContextMenu={handleTitleContextMenu}
           >
             <div className="flex items-center gap-1 overflow-hidden pointer-events-none">
@@ -389,15 +393,15 @@ useEffect(() => {
 
           {/* INTERACTIVE MENU BAR */}
           <div className="retro-menu-bar border-b border-os-dark-gray select-none bg-os-gray flex gap-2 px-1 text-sm relative z-50 shrink-0">
-            
+
             {/* Invisible overlay to close dropdowns when clicking outside */}
             {activeMenu && (
               <div className="fixed inset-0 z-40" onClick={closeMenu}></div>
             )}
-            
+
             {/* FILE MENU */}
             <div className="relative z-50">
-              <span 
+              <span
                 className={`cursor-pointer px-2 py-[1px] inline-block ${activeMenu === 'file' ? 'bg-blue-900 text-white' : 'hover:bg-blue-900 hover:text-white'}`}
                 onClick={() => { playSound('click'); setActiveMenu(activeMenu === 'file' ? null : 'file'); }}
               >
@@ -412,7 +416,7 @@ useEffect(() => {
 
             {/* EDIT MENU */}
             <div className="relative z-50">
-              <span 
+              <span
                 className={`cursor-pointer px-2 py-[1px] inline-block ${activeMenu === 'edit' ? 'bg-blue-900 text-white' : 'hover:bg-blue-900 hover:text-white'}`}
                 onClick={() => { playSound('click'); setActiveMenu(activeMenu === 'edit' ? null : 'edit'); }}
               >
@@ -429,7 +433,7 @@ useEffect(() => {
 
             {/* VIEW MENU */}
             <div className="relative z-50">
-              <span 
+              <span
                 className={`cursor-pointer px-2 py-[1px] inline-block ${activeMenu === 'view' ? 'bg-blue-900 text-white' : 'hover:bg-blue-900 hover:text-white'}`}
                 onClick={() => { playSound('click'); setActiveMenu(activeMenu === 'view' ? null : 'view'); }}
               >
@@ -449,7 +453,7 @@ useEffect(() => {
 
             {/* HELP MENU */}
             <div className="relative z-50">
-              <span 
+              <span
                 className={`cursor-pointer px-2 py-[1px] inline-block ${activeMenu === 'help' ? 'bg-blue-900 text-white' : 'hover:bg-blue-900 hover:text-white'}`}
                 onClick={() => { playSound('click'); setActiveMenu(activeMenu === 'help' ? null : 'help'); }}
               >
@@ -458,7 +462,14 @@ useEffect(() => {
               {activeMenu === 'help' && (
                 <div className="absolute top-full left-0 bg-os-gray shadow-retro-outset border border-os-white flex flex-col min-w-[200px] text-black py-1">
                   <div className="px-3 py-1 hover:bg-os-navy hover:text-white cursor-pointer" onClick={() => handleMenuAction(() => onOpenApp('about-us'))}>About Vishal OS</div>
-                  <div className="px-3 py-1 hover:bg-os-navy hover:text-white cursor-pointer" onClick={() => handleMenuAction(() => alert(`Help topics for ${app.name} are currently unavailable.`))}>Help Topics</div>
+                  <div className="px-3 py-1 hover:bg-os-navy hover:text-white cursor-pointer" onClick={() => handleMenuAction(() => {
+                    showSystemDialog({ 
+                      type: 'info', 
+                      title: 'Help', 
+                      message: `Help topics for ${app.name} are currently unavailable.`, 
+                      buttons: ['OK'] 
+                    });
+                  })}>Help Topics</div>
                 </div>
               )}
             </div>

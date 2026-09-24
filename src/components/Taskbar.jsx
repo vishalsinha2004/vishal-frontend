@@ -1,145 +1,101 @@
 import React, { useState, useEffect } from 'react';
 import { useSound } from '../hooks/useSound';
+import { volumeIcon, muteIcon } from '../utils/icons';
 
-const startLogo = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M0 2h7v6H0z' fill='%23ff0000'/%3E%3Cpath d='M9 2h7v6H9z' fill='%2300ff00'/%3E%3Cpath d='M0 9h7v6H0z' fill='%230000ff'/%3E%3Cpath d='M9 9h7v6H9z' fill='%23ffff00'/%3E%3C/svg%3E";
-
-const Taskbar = ({ openApps = [], activeWindowId, onCloseApp, onOpenApp, onMinimizeApp, toggleStartMenu, isStartMenuOpen }) => {
-  const [time, setTime] = useState(new Date());
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [battery, setBattery] = useState({ level: 1, charging: false, supported: false });
-  const [volume, setVolume] = useState(100);
-  
-  const { playSound } = useSound();
+const Taskbar = ({
+  openApps, activeWindowId, onCloseApp, onOpenApp,
+  onMinimizeApp, onFocusApp, isStartMenuOpen, toggleStartMenu
+}) => {
+  const [time, setTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
+  const { playSound, isMuted, toggleMute, volume, changeVolume } = useSound();
 
   useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    if ('getBattery' in navigator) {
-      navigator.getBattery().then((batt) => {
-        const updateBattery = () => {
-          setBattery({ level: batt.level, charging: batt.charging, supported: true });
-        };
-        updateBattery();
-        batt.addEventListener('levelchange', updateBattery);
-        batt.addEventListener('chargingchange', updateBattery);
-      });
-    }
-
-    return () => {
-      clearInterval(timer);
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
+    const timer = setInterval(() => {
+      setTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    }, 1000);
+    return () => clearInterval(timer);
   }, []);
 
-  const toggleMute = () => {
-    setVolume(volume === 0 ? 100 : 0);
-  };
-
-  const handleStartClick = (e) => { // <-- Add (e) here
-    playSound('menu-open');
-    toggleStartMenu(e);             // <-- Pass (e) here
- 
-  };
-
   return (
-    <div className="fixed bottom-0 left-0 w-full h-[30px] bg-os-gray border-t border-os-white shadow-[0_-1px_0_#dfdfdf] flex items-center px-1 z-[9999] select-none font-sans">
+    <div className="h-8 bg-os-gray border-t border-white shadow-[0_-1px_0_#dfdfdf] flex items-center px-1 gap-1 z-[9999] shrink-0 font-sans select-none w-full relative">
       
-      <button 
-        onClick={handleStartClick}
-        className={`flex items-center gap-1.5 h-[22px] px-1.5 font-bold text-xs text-os-text outline-none focus:outline-none focus:ring-1 focus:ring-black focus:ring-offset-0 shrink-0
-          ${isStartMenuOpen ? 'shadow-retro-inset pt-[2px] pl-[6px] pr-1 pb-0 bg-os-gray' : 'shadow-retro-outset bg-os-gray active:shadow-retro-inset active:pt-[2px] active:pl-[6px] active:pr-1 active:pb-0'}`}
-        title="Click here to begin"
+      {/* Start Button */}
+      <button
+        onClick={(e) => {
+          if (e && e.stopPropagation) e.stopPropagation();
+          if (!isStartMenuOpen) playSound('click');
+          toggleStartMenu(e);
+        }}
+        className={`flex items-center gap-1 px-2 h-[22px] font-bold text-black border focus:outline-none
+          ${isStartMenuOpen ? 'bg-[#d0d0d0] shadow-retro-inset outline-dotted outline-1 outline-black outline-offset-[-3px]' : 'bg-os-gray shadow-retro-outset active:shadow-retro-inset hover:bg-[#e0e0e0]'}`}
       >
-        <img src={startLogo} alt="Start" className="w-[14px] h-[14px] opacity-90" style={{ imageRendering: 'pixelated' }} />
-        <span className="mb-[1px]">Start</span>
+        <span className="text-blue-900 italic">VISHAL</span>
       </button>
 
-      <div className="w-[2px] h-[22px] bg-os-gray border-l border-os-dark-gray border-r border-os-white mx-1.5 shrink-0"></div>
+      {/* Divider */}
+      <div className="w-[2px] h-5 border-l border-os-dark-gray border-r border-white mx-1"></div>
 
-      {/* --- RUNNING APPLICATIONS AREA --- */}
-      {/* Added touch-pan-x and specific scrollbar hiding for smooth mobile swiping */}
-      <div className="flex-1 flex items-center space-x-1 overflow-x-auto h-[22px] no-scrollbar px-1 touch-pan-x">
-        {openApps.map((app) => {
-          const isActive = activeWindowId === app.id && !app.isMinimized;
-          
+      {/* Window Buttons */}
+      <div className="flex flex-1 gap-1 overflow-x-auto custom-scrollbar items-center h-full">
+        {openApps.map(app => {
+          const isAppActive = activeWindowId === app.id && !app.isMinimized;
           return (
-            <button 
-              key={app.id} 
+            <button
+              key={app.id}
               onClick={() => {
-                playSound('button');
-                if (isActive) {
-                  onMinimizeApp(app.id); 
-                } else {
-                  onOpenApp(app.id);
-                }
+                playSound('click');
+                isAppActive ? onMinimizeApp(app.id) : onFocusApp(app.id);
               }}
-              className={`flex items-center gap-1.5 h-full min-w-[100px] sm:min-w-[120px] max-w-[160px] text-os-text text-xs font-bold outline-none border border-transparent transition-none shrink-0
-                ${isActive 
-                  ? 'shadow-retro-inset pt-[2px] pl-[6px] pr-1 pb-0 bg-os-gray/90' 
-                  : 'shadow-retro-outset px-1.5 bg-os-gray hover:bg-os-gray active:shadow-retro-inset active:pt-[2px] active:pl-[6px] active:pr-1 active:pb-0' 
-                }`}
+              className={`flex items-center gap-1 px-1 min-w-[100px] max-w-[150px] h-[22px] truncate text-xs font-dialog border
+                ${isAppActive 
+                   ? 'shadow-retro-inset bg-os-gray font-bold outline outline-1 outline-dotted outline-black outline-offset-[-3px]' 
+                   : 'shadow-retro-outset bg-os-gray hover:bg-[#d0d0d0]'}`}
             >
-              <img src={app.icon} alt={app.name} className="w-3.5 h-3.5 object-contain" style={{ imageRendering: 'pixelated' }} />
-              <span className="truncate flex-1 text-left mb-[1px]">{app.name}</span>
+              <img src={app.icon} alt="" className="w-3.5 h-3.5 object-contain shrink-0" style={{ imageRendering: 'pixelated' }} />
+              <span className="truncate">{app.name}</span>
             </button>
-          );
+          )
         })}
       </div>
 
-      <div className="w-[2px] h-[22px] bg-os-gray border-l border-os-dark-gray border-r border-os-white mx-1.5 shrink-0 hidden sm:block"></div>
-
-      <div className="shadow-retro-inset bg-os-gray h-[22px] px-2 flex items-center gap-2 sm:gap-3 shrink-0 border border-transparent">
-        
-        {battery.supported && (
-          <div className="flex items-center" title={`Battery: ${Math.round(battery.level * 100)}% ${battery.charging ? '(Charging)' : ''}`}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" className="w-3.5 h-3.5">
-              <rect x="2" y="7" width="16" height="10" rx="1" ry="1"></rect>
-              <line x1="21" y1="10" x2="21" y2="14"></line>
-              {battery.level > 0.1 && <rect x="4" y="9" width={12 * battery.level} height="6" fill={battery.charging ? "#008000" : "#000"} stroke="none"></rect>}
-            </svg>
-          </div>
-        )}
-
-        <div className="flex items-center cursor-help" title={isOnline ? "Network Connected" : "No Internet Connection"}>
-          {isOnline ? (
-            <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="square" className="w-3.5 h-3.5">
-              <rect x="14" y="14" width="6" height="6" fill="#000"></rect>
-              <rect x="4" y="4" width="6" height="6" fill="#000"></rect>
-              <polyline points="10 7 17 7 17 14"></polyline>
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" fill="none" stroke="#808080" strokeWidth="2" strokeLinecap="square" className="w-3.5 h-3.5">
-              <line x1="2" y1="2" x2="22" y2="22"></line>
-              <rect x="14" y="14" width="6" height="6"></rect>
-              <rect x="4" y="4" width="6" height="6"></rect>
-            </svg>
-          )}
-        </div>
-
-        <button onClick={toggleMute} className="flex items-center focus:outline-none" title={`Volume: ${volume}%`}>
-          {volume > 0 ? (
-            <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter" className="w-3.5 h-3.5">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#000"></polygon>
-              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" fill="none" stroke="#808080" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter" className="w-3.5 h-3.5">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#808080"></polygon>
-              <line x1="23" y1="9" x2="17" y2="15"></line>
-              <line x1="17" y1="9" x2="23" y2="15"></line>
-            </svg>
-          )}
+      {/* System Tray */}
+      <div className="flex items-center gap-2 px-2 h-[22px] shadow-retro-inset border border-os-dark-gray bg-os-gray relative">
+        <button 
+          onClick={() => { playSound('click'); setShowVolumeSlider(!showVolumeSlider); }}
+          onDoubleClick={toggleMute}
+          className="w-4 h-4 outline-none focus:outline-dotted focus:outline-1 focus:outline-black"
+          title="Volume"
+        >
+          <img src={isMuted ? muteIcon : volumeIcon} alt="Volume" className="w-full h-full object-contain" style={{ imageRendering: 'pixelated' }} />
         </button>
 
-        {/* Hidden on extra small mobile screens to save space */}
-        <div className="hidden sm:block font-sans text-xs text-os-text tracking-wide cursor-default" title={time.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}>
-          {time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-        </div>
+        {/* Volume Slider Popup */}
+        {showVolumeSlider && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setShowVolumeSlider(false)}></div>
+            <div className="absolute bottom-[24px] right-0 w-28 bg-os-gray shadow-retro-outset border border-os-white p-2 z-50 flex flex-col items-center gap-3">
+              <div className="w-full bg-[#000080] text-white font-dialog font-bold px-1 text-xs mb-1 text-center">Volume</div>
+              <input 
+                type="range" 
+                min="0" 
+                max="1" 
+                step="0.05" 
+                value={isMuted ? 0 : volume}
+                onChange={(e) => changeVolume(parseFloat(e.target.value))}
+                onMouseUp={() => playSound('click')}
+                className="w-full cursor-pointer"
+                style={{ accentColor: '#008080' }}
+              />
+              <div className="flex items-center gap-1 w-full justify-start border-t border-os-dark-gray pt-2">
+                <input type="checkbox" id="mute-check" checked={isMuted} onChange={toggleMute} className="cursor-pointer" />
+                <label htmlFor="mute-check" className="text-xs cursor-pointer select-none">Mute</label>
+              </div>
+            </div>
+          </>
+        )}
+
+        <span className="text-xs font-dialog">{time}</span>
       </div>
     </div>
   );

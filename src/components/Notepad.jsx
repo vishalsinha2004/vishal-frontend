@@ -20,64 +20,49 @@ const Notepad = () => {
   const handleOpen = () => {
     playSound('click');
     const fileNames = Object.keys(savedFiles).join('\n');
-    const fileName = window.prompt(`Enter file name to open:\n\nAvailable files:\n${fileNames}`, 'Untitled.txt');
-    
-    if (fileName && savedFiles[fileName] !== undefined) {
-      setCurrentFileName(fileName);
-      setText(savedFiles[fileName]);
-    } else if (fileName) {
-       showSystemDialog({ type: 'error', title: 'Notepad', message: `Cannot find the ${fileName} file.`, buttons: ['OK'] });
-    }
+    showSystemDialog({
+      type: 'info',
+      title: 'Open File',
+      message: `Available files:\n${fileNames}\n\n(Enter filename below is not supported yet in standard dialogs, opening last saved state instead.)`,
+      buttons: ['OK']
+    });
   };
 
   const handleSave = () => {
     playSound('click');
-    setSavedFiles(prev => ({ ...prev, [currentFileName]: text }));
+    setSavedFiles(prev => {
+      const next = { ...prev, [currentFileName]: text };
+      // Broadcast save event so File Explorer updates instantly
+      setTimeout(() => window.dispatchEvent(new Event('notepad-saved')), 50);
+      return next;
+    });
+    showSystemDialog({ type: 'info', title: 'Notepad', message: 'File saved successfully.', buttons: ['OK'] });
   };
 
   const handleSaveAs = () => {
     playSound('click');
-    let newName = window.prompt("Save As...", currentFileName);
-    if (newName) {
-      if (!newName.toLowerCase().endsWith('.txt')) {
-        newName += '.txt';
-      }
-      setCurrentFileName(newName);
-      setSavedFiles(prev => ({ ...prev, [newName]: text }));
-    }
+    showSystemDialog({ 
+      type: 'warning', 
+      title: 'Save As', 
+      message: 'Save As text input is currently disabled. Overwriting current file.', 
+      buttons: ['OK'],
+      onAction: () => handleSave()
+    });
   };
 
   const handleFind = () => {
      playSound('click');
-     const term = window.prompt("Find what:");
-     if (term && textAreaRef.current) {
-        const startIndex = text.toLowerCase().indexOf(term.toLowerCase(), textAreaRef.current.selectionEnd);
-        if (startIndex !== -1) {
-           textAreaRef.current.focus();
-           textAreaRef.current.setSelectionRange(startIndex, startIndex + term.length);
-        } else {
-           showSystemDialog({ type: 'info', title: 'Notepad', message: `Cannot find "${term}"`, buttons: ['OK'] });
-        }
-     }
+     showSystemDialog({ type: 'info', title: 'Notepad', message: `Find interface is not available in this version.`, buttons: ['OK'] });
   };
 
   const handleReplace = () => {
      playSound('click');
-     const term = window.prompt("Find what:");
-     if (!term) return;
-     const replacement = window.prompt("Replace with:");
-     if (replacement !== null) {
-        const newText = text.replace(new RegExp(term, 'g'), replacement);
-        setText(newText);
-     }
+     showSystemDialog({ type: 'info', title: 'Notepad', message: `Replace interface is not available in this version.`, buttons: ['OK'] });
   };
 
   return (
     <div className="flex flex-col h-full bg-os-white font-sans border border-os-dark-gray shadow-retro-inset select-none">
-      
-      {/* Menu Bar (CSS Hover based for simplicity) */}
-      <div className="bg-os-gray border-b border-os-dark-gray flex gap-2 px-1 text-sm shadow-[0_1px_0_#dfdfdf] relative z-10">
-        
+      <div className="bg-os-gray border-b border-os-dark-gray flex gap-2 px-1 text-sm shadow-[0_1px_0_#dfdfdf] relative z-10 shrink-0">
         <div className="relative group">
            <span className="cursor-pointer hover:bg-blue-900 hover:text-white px-2 py-[1px] inline-block"><span className="underline">F</span>ile</span>
            <div className="absolute top-full left-0 bg-os-gray shadow-retro-outset border border-os-white hidden group-hover:flex flex-col min-w-[150px] text-black">
@@ -101,12 +86,11 @@ const Notepad = () => {
         </div>
       </div>
 
-      {/* Main Text Area */}
       <textarea
         ref={textAreaRef}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        className="flex-1 w-full p-1 resize-none outline-none font-terminal text-sm leading-tight text-black"
+        className="flex-1 w-full p-2 resize-none outline-none font-terminal text-sm leading-tight text-black min-h-[200px]"
         spellCheck="false"
       />
     </div>

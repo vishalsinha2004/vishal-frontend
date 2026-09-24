@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { fileIcon, floppyIcon, navRefreshIcon } from '../utils/icons';
 
 const Resume = () => {
   const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
@@ -12,10 +13,7 @@ const Resume = () => {
         return res.json();
       })
       .then((data) => {
-        // Retrieve the object (works whether Django returns a list or a single object)
         const profile = Array.isArray(data) ? data[0] : data;
-        
-        // If the 'resume' URL exists in the DB, store it
         if (profile && profile.resume) {
           setResumeUrl(profile.resume);
         }
@@ -33,7 +31,6 @@ const Resume = () => {
     }
   };
 
-  // --- LOADING STATE ---
   if (loading) {
     return (
       <div className="h-full w-full bg-os-gray flex items-center justify-center font-sans text-sm text-os-text">
@@ -42,33 +39,28 @@ const Resume = () => {
     );
   }
 
-  // --- EMPTY / ERROR STATE ---
   if (!resumeUrl) {
     return (
       <div className="h-full bg-os-white flex flex-col items-center justify-center font-sans text-os-text p-8 text-center shadow-retro-inset m-1 border border-os-dark-gray">
-        <span className="text-4xl mb-4">📄</span>
+        <img src={fileIcon} alt="File" className="w-12 h-12 mb-4 opacity-50 grayscale" style={{ imageRendering: 'pixelated' }} />
         <p className="font-bold text-sm">Document Not Found</p>
-        <p className="text-xs mt-2">Please upload a valid PDF document via the System Admin Panel.</p>
+        <p className="text-xs mt-2 text-os-dark-gray">Please upload a valid PDF document via the System Admin Panel.</p>
       </div>
     );
   }
 
-  // --- SUCCESS STATE: CLASSIC DOCUMENT VIEWER ---
   return (
     <div className="h-full w-full bg-os-gray flex flex-col font-sans text-os-text select-none">
       
-      
-
-      {/* 2. Classic Toolbar */}
-      <div className="flex items-center gap-1 p-1 border-b border-os-dark-gray shadow-[0_1px_0_#ffffff]">
-        <button onClick={handleExternalAction} className="retro-btn px-2 py-1 flex items-center gap-1 text-xs" title="Open Document in External Viewer">
-          <span className="text-sm leading-none mt-[-2px]">📂</span> Open
+      <div className="flex items-center gap-1 p-1 border-b border-os-dark-gray shadow-[0_1px_0_#ffffff] shrink-0">
+        <button onClick={handleExternalAction} className="retro-btn px-2 py-1 flex items-center gap-1.5 text-xs" title="Open Document in External Viewer">
+          <img src={fileIcon} alt="" className="w-3.5 h-3.5 object-contain" style={{ imageRendering: 'pixelated' }} /> Open
         </button>
-        <button onClick={handleExternalAction} className="retro-btn px-2 py-1 flex items-center gap-1 text-xs" title="Save a copy">
-          <span className="text-sm leading-none mt-[-2px]">💾</span> Save
+        <button onClick={handleExternalAction} className="retro-btn px-2 py-1 flex items-center gap-1.5 text-xs" title="Save a copy">
+          <img src={floppyIcon} alt="" className="w-3.5 h-3.5 object-contain" style={{ imageRendering: 'pixelated' }} /> Save
         </button>
-        <button onClick={handleExternalAction} className="retro-btn px-2 py-1 flex items-center gap-1 text-xs" title="Print Document">
-          <span className="text-sm leading-none mt-[-2px]">🖨️</span> Print
+        <button onClick={handleExternalAction} className="retro-btn px-2 py-1 flex items-center gap-1.5 text-xs" title="Refresh Viewer">
+          <img src={navRefreshIcon} alt="" className="w-3 h-3 object-contain" style={{ imageRendering: 'pixelated' }} /> Reload
         </button>
         
         <div className="w-px h-5 bg-os-dark-gray border-r border-os-white mx-1"></div>
@@ -84,11 +76,7 @@ const Resume = () => {
         </div>
       </div>
 
-      {/* 3. Document Workspace */}
-      {/* A classic dark gray workspace background where the "paper" sits */}
       <div className="flex-1 bg-os-dark-gray p-2 md:p-4 overflow-hidden flex justify-center shadow-retro-inset m-1">
-        
-        {/* The PDF iFrame acting as the "Paper" */}
         <div className="w-full max-w-4xl h-full bg-white shadow-retro-outset flex flex-col">
           <iframe 
             src={`${resumeUrl}#toolbar=0&navpanes=0&scrollbar=1&view=FitH`} 
@@ -97,11 +85,9 @@ const Resume = () => {
             style={{ backgroundColor: '#ffffff' }}
           />
         </div>
-
       </div>
 
-      {/* 4. Status Bar */}
-      <div className="retro-status-bar">
+      <div className="retro-status-bar shrink-0">
         <span>Done</span>
         <div className="flex gap-4">
           <span className="border-l border-os-dark-gray pl-2">Page 1 of 1</span>

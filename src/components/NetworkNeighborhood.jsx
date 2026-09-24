@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSound } from '../hooks/useSound';
 import { showSystemDialog } from './SystemDialog';
 import ContextMenu from './ContextMenu';
+import { networkIcon, systemOsIcon, serverIcon, processorIcon } from '../utils/icons';
 
 const NetworkNeighborhood = () => {
   const [selectedId, setSelectedId] = useState(null);
@@ -9,17 +10,17 @@ const NetworkNeighborhood = () => {
   const { playSound } = useSound();
 
   const networkNodes = [
-    { id: 'internet', name: 'Entire Network', icon: '🌐', type: 'global' },
-    { id: 'portfolio', name: 'Vishal-PC', icon: '💻', type: 'local' },
-    { id: 'backend', name: 'Backend-Server', icon: '🖧', type: 'server' },
-    { id: 'ai', name: 'Luma-AI-Node', icon: '🧠', type: 'server' },
-    { id: 'github', name: 'GitHub.com', icon: '🖥️', type: 'external', url: 'https://github.com/vishalsinha2004' },
-    { id: 'linkedin', name: 'LinkedIn', icon: '🖥️', type: 'external', url: 'https://linkedin.com/in/vishalsinha' }
+    { id: 'internet', name: 'Entire Network', icon: networkIcon, type: 'global' },
+    { id: 'portfolio', name: 'Vishal-PC', icon: systemOsIcon, type: 'local' },
+    { id: 'backend', name: 'Backend-Server', icon: serverIcon, type: 'server' },
+    { id: 'ai', name: 'Luma-AI-Node', icon: processorIcon, type: 'server' },
+    { id: 'github', name: 'GitHub.com', icon: serverIcon, type: 'external', url: 'https://github.com/vishalsinha2004' },
+    { id: 'linkedin', name: 'LinkedIn', icon: serverIcon, type: 'external', url: 'https://linkedin.com/in/vishalsinha' }
   ];
 
   const handlePing = (node) => {
     const isOnline = navigator.onLine;
-    const latency = Math.floor(Math.random() * 60) + 12; // Simulate 12-72ms latency
+    const latency = Math.floor(Math.random() * 60) + 12; 
     
     showSystemDialog({
       type: isOnline ? 'info' : 'error',
@@ -59,15 +60,13 @@ const NetworkNeighborhood = () => {
         setContextMenu({ visible: true, x: e.clientX, y: e.clientY, targetNode: null });
       }}
     >
-      {/* Toolbar */}
-      <div className="flex items-center gap-2 p-1 border-b border-os-dark-gray bg-os-gray">
-        <div className="flex-1 flex items-center bg-os-white shadow-retro-inset border border-os-dark-gray px-1 text-xs">
+      <div className="flex items-center gap-2 p-1 border-b border-os-dark-gray bg-os-gray shrink-0">
+        <div className="flex-1 flex items-center bg-os-white shadow-retro-inset border border-os-dark-gray px-1 py-0.5 text-xs">
           <span className="text-os-dark-gray mr-1">Address:</span>
           <span className="truncate">Network Neighborhood</span>
         </div>
       </div>
 
-      {/* Main Content Area */}
       <div className="flex-1 bg-os-white p-2 overflow-y-auto shadow-retro-inset grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 content-start">
         {networkNodes.map(node => (
           <div 
@@ -82,13 +81,13 @@ const NetworkNeighborhood = () => {
               handleDoubleClick(node); 
             }}
             onContextMenu={(e) => handleNodeContextMenu(e, node)}
-            className="flex flex-col items-center justify-start p-2 cursor-default outline-none"
+            className="flex flex-col items-center justify-start p-2 cursor-default outline-none group"
           >
-            <div className="text-4xl mb-1 relative">
+            <div className="w-10 h-10 mb-1 relative flex items-center justify-center">
               {selectedId === node.id && (
                 <div className="absolute inset-0 bg-os-navy opacity-40 mix-blend-multiply pointer-events-none"></div>
               )}
-              {node.icon}
+              <img src={node.icon} alt="" className="w-8 h-8 object-contain" style={{ imageRendering: 'pixelated' }} />
             </div>
             <span className={`text-xs text-center leading-tight px-1 line-clamp-2 shadow-sm
               ${selectedId === node.id 
@@ -102,15 +101,13 @@ const NetworkNeighborhood = () => {
         ))}
       </div>
 
-      {/* Status Bar */}
-      <div className="bg-os-gray shadow-retro-inset px-2 py-0.5 text-xs border border-os-dark-gray flex justify-between text-os-text">
+      <div className="bg-os-gray shadow-retro-inset px-2 py-1 text-xs border border-os-dark-gray flex justify-between text-os-text shrink-0">
         <span>{networkNodes.length} object(s)</span>
         <span className="border-l border-os-dark-gray pl-2">
           {navigator.onLine ? 'Online' : 'Offline'}
         </span>
       </div>
 
-      {/* Context Menu */}
       <ContextMenu 
         visible={contextMenu.visible}
         x={contextMenu.x}

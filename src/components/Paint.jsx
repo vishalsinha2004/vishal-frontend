@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useSound } from '../hooks/useSound';
+import { pencilIcon, eraserIcon, fillIcon, lineIcon, rectIcon, clearIcon, floppyIcon } from '../utils/icons';
 
 const CLASSIC_COLORS = [
   '#000000', '#808080', '#800000', '#808000', '#008000', '#008080', '#000080', '#800080',
@@ -7,11 +8,11 @@ const CLASSIC_COLORS = [
 ];
 
 const TOOLS = [
-  { id: 'pencil', icon: '✏️', name: 'Pencil' },
-  { id: 'eraser', icon: '🧽', name: 'Eraser' },
-  { id: 'fill', icon: '🪣', name: 'Fill' },
-  { id: 'line', icon: '📏', name: 'Line' },
-  { id: 'rect', icon: '⬜', name: 'Rectangle' },
+  { id: 'pencil', icon: pencilIcon, name: 'Pencil' },
+  { id: 'eraser', icon: eraserIcon, name: 'Eraser' },
+  { id: 'fill', icon: fillIcon, name: 'Fill' },
+  { id: 'line', icon: lineIcon, name: 'Line' },
+  { id: 'rect', icon: rectIcon, name: 'Rectangle' },
 ];
 
 const Paint = () => {
@@ -26,10 +27,9 @@ const Paint = () => {
   
   const { playSound } = useSound();
 
-  // Initialize Canvas
   useEffect(() => {
     const canvas = canvasRef.current;
-    canvas.width = 600; // Fixed canvas size for pixel-art feel
+    canvas.width = 600; 
     canvas.height = 400;
     
     const context = canvas.getContext('2d', { willReadFrequently: true });
@@ -41,7 +41,6 @@ const Paint = () => {
     contextRef.current = context;
   }, []);
 
-  // Update context colors when state changes
   useEffect(() => {
     if (contextRef.current) {
       contextRef.current.strokeStyle = activeTool === 'eraser' ? '#ffffff' : activeColor;
@@ -71,7 +70,6 @@ const Paint = () => {
 
     const [fillR, fillG, fillB, fillA] = hexToRgba(fillColorHex);
 
-    // If clicking on the same color, do nothing
     if (startR === fillR && startG === fillG && startB === fillB && startA === fillA) return;
 
     const matchStartColor = (pos) => {
@@ -141,7 +139,6 @@ const Paint = () => {
       return;
     }
 
-    // Take snapshot for shape previews (Line/Rect)
     setSnapshot(contextRef.current.getImageData(0, 0, canvasRef.current.width, canvasRef.current.height));
     
     contextRef.current.beginPath();
@@ -166,7 +163,6 @@ const Paint = () => {
       ctx.lineTo(offsetX, offsetY);
       ctx.stroke();
     } else if (activeTool === 'line' || activeTool === 'rect') {
-      // Restore snapshot to clear previous preview frame
       ctx.putImageData(snapshot, 0, 0);
       ctx.beginPath();
       
@@ -188,7 +184,7 @@ const Paint = () => {
     const ctx = contextRef.current;
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = activeColor; // Restore active color
+    ctx.fillStyle = activeColor;
   };
 
   const saveCanvas = () => {
@@ -202,32 +198,32 @@ const Paint = () => {
 
   return (
     <div className="flex flex-col h-full bg-os-gray font-sans select-none border border-os-dark-gray shadow-retro-inset overflow-hidden">
-      
-     
-      
-
       <div className="flex flex-1 overflow-hidden">
         {/* Left Toolbar */}
-        <div className="w-12 bg-os-gray border-r border-os-dark-gray shadow-[1px_0_0_#dfdfdf] p-1 flex flex-col gap-1 items-center z-10">
+        <div className="w-12 bg-os-gray border-r border-os-dark-gray shadow-[1px_0_0_#dfdfdf] p-1 flex flex-col gap-1 items-center z-10 pt-2">
           <div className="grid grid-cols-2 gap-1 w-full">
             {TOOLS.map((tool) => (
               <button
                 key={tool.id}
                 title={tool.name}
                 onClick={() => { playSound('click'); setActiveTool(tool.id); }}
-                className={`w-5 h-5 flex items-center justify-center text-[10px] outline-none
+                className={`w-5 h-5 flex items-center justify-center outline-none
                   ${activeTool === tool.id 
                     ? 'shadow-retro-inset bg-os-dark-gray/20' 
                     : 'shadow-retro-outset bg-os-gray hover:bg-os-gray active:shadow-retro-inset'}`}
               >
-                {tool.icon}
+                <img src={tool.icon} alt={tool.name} className="w-3.5 h-3.5 object-contain" style={{ imageRendering: 'pixelated' }} />
               </button>
             ))}
           </div>
           <div className="w-full border-t border-os-dark-gray border-b border-white my-1"></div>
           {/* Action Buttons */}
-          <button title="Clear" onClick={clearCanvas} className="w-10 h-6 shadow-retro-outset active:shadow-retro-inset text-xs font-bold mb-1">🗑️</button>
-          <button title="Save" onClick={saveCanvas} className="w-10 h-6 shadow-retro-outset active:shadow-retro-inset text-xs font-bold">💾</button>
+          <button title="Clear Canvas" onClick={clearCanvas} className="w-10 h-6 flex justify-center items-center shadow-retro-outset active:shadow-retro-inset mb-1">
+            <img src={clearIcon} alt="Clear" className="w-4 h-4 object-contain" style={{ imageRendering: 'pixelated' }} />
+          </button>
+          <button title="Save Image" onClick={saveCanvas} className="w-10 h-6 flex justify-center items-center shadow-retro-outset active:shadow-retro-inset">
+            <img src={floppyIcon} alt="Save" className="w-4 h-4 object-contain" style={{ imageRendering: 'pixelated' }} />
+          </button>
         </div>
 
         {/* Canvas Area */}
@@ -247,9 +243,8 @@ const Paint = () => {
       </div>
 
       {/* Bottom Color Palette */}
-      <div className="h-10 bg-os-gray border-t border-os-dark-gray shadow-[0_-1px_0_#dfdfdf] flex items-center px-2 gap-2">
+      <div className="h-10 bg-os-gray border-t border-os-dark-gray shadow-[0_-1px_0_#dfdfdf] flex items-center px-2 gap-2 shrink-0 z-10 relative">
         <div className="w-8 h-8 shadow-retro-inset flex items-center justify-center bg-os-gray shrink-0 relative">
-           {/* Color Box Indicator */}
            <div className="absolute w-4 h-4 shadow-retro-inset" style={{ backgroundColor: '#ffffff', top: '4px', left: '4px' }}></div>
            <div className="absolute w-4 h-4 shadow-retro-inset" style={{ backgroundColor: activeColor, top: '12px', left: '12px' }}></div>
         </div>
