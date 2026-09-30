@@ -66,7 +66,8 @@ const Desktop = ({ systemApps, onOpenApp }) => {
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 });
   const { playSound } = useSound();
 
-  const [iconPositions, setIconPositions] = useLocalStorage('vishal_os_icon_positions', {});
+  // BUST THE CACHE: Changed key to v2 to wipe out the old blank spaces permanently
+  const [iconPositions, setIconPositions] = useLocalStorage('vishal_os_icon_positions_v2', {});
   const [autoArrange, setAutoArrange] = useLocalStorage('vishal_os_auto_arrange', false);
 
   const handleDesktopClick = () => {
@@ -91,7 +92,6 @@ const Desktop = ({ systemApps, onOpenApp }) => {
     let currentX = 10;
     const iconHeight = 85;
     const iconWidth = 85;
-    // Safeguard: Ensure maxH is never zero during page load
     const maxH = Math.max(window.innerHeight - 60, 300); 
 
     systemApps.forEach((app) => {
@@ -115,17 +115,13 @@ const Desktop = ({ systemApps, onOpenApp }) => {
     setAutoArrange(!autoArrange);
   };
 
-  // Run grid calculation on mount/changes
   useEffect(() => {
     let needsCalc = false;
 
-    // 1. Missing positions check
     if (systemApps.some(app => !iconPositions[app.id])) {
       needsCalc = true;
     }
 
-    // 2. Corrupted Cache Overlap Check
-    // If ANY two icons have the exact same coordinates, force a recalculation
     if (!needsCalc && iconPositions && typeof iconPositions === 'object') {
       const vals = Object.values(iconPositions);
       for (let i = 0; i < vals.length; i++) {
@@ -145,7 +141,6 @@ const Desktop = ({ systemApps, onOpenApp }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [systemApps, autoArrange]);
 
-  // Responsive logic: Recalculate grid automatically if window is resized
   useEffect(() => {
     let resizeTimer;
     const handleResize = () => {

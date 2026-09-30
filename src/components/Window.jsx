@@ -251,6 +251,7 @@ const Window = ({
           systemApps={systemApps}
           isCrtMode={isCrtMode}
           setIsCrtMode={setIsCrtMode}
+          fsApi={fsApi}
         />
       );
     }

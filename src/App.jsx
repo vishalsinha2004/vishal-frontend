@@ -6,21 +6,16 @@ import StartMenu from './components/StartMenu';
 import TopSearch from './components/TopSearch';
 import VoiceAssistant from './components/VoiceAssistant';
 import SystemDialog from './components/SystemDialog';
-import SplashScreen from './components/SplashScreen'; // <-- NEW IMPORT
+import SplashScreen from './components/SplashScreen';
 import { useWindowManager } from './hooks/useWindowManager';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useSound } from './hooks/useSound';
 import { 
-  systemOsIcon, aboutUsIcon, settingsIcon, folderIcon, fileExplorerIcon, 
-  resumeIcon, gamesFolderIcon, ticTacToeIcon, problemSolverIcon, recycleBinIcon, 
-  networkIcon, ieIcon, lumaAiIcon, sysMonitorIcon, notepadIcon, paintIcon, minesweeperIcon 
+  folderIcon, fileExplorerIcon, gamesFolderIcon, ticTacToeIcon, lumaAiIcon, sysMonitorIcon 
 } from './utils/icons';
 
 import { useFileSystem } from './hooks/useFileSystem';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
-
-
-
 
 function App() {
   const [systemApps, setSystemApps] = useState([]);
@@ -29,7 +24,6 @@ function App() {
   const [bootText, setBootText] = useState([]);
   const fsApi = useFileSystem(systemApps);
 
-  // -- SHUTDOWN MODAL STATES --
   const [showShutdown, setShowShutdown] = useState(false);
   const [shutdownChoice, setShutdownChoice] = useState('shutdown');
 
@@ -48,9 +42,7 @@ function App() {
     activeWindowId
   } = useWindowManager();
 
-  // --- BOOT SEQUENCE LOGIC ---
   useEffect(() => {
-    // Instantly skip to Desktop if session storage is already set
     if (sessionStorage.getItem('vishal_os_splash_seen') === 'true') {
       setBootState(3);
       return;
@@ -93,7 +85,6 @@ function App() {
     }
   }, [bootState]);
 
-  // Handle BIOS Skip
   useEffect(() => {
     const handleGlobalKey = (e) => {
       if (e.key === 'Enter' && bootState === 0) {
@@ -104,7 +95,6 @@ function App() {
     return () => window.removeEventListener('keydown', handleGlobalKey);
   }, [bootState]);
 
-  // Handle System Reboot/Logoff events
   useEffect(() => {
     const handleSysShutdown = (e) => {
       if (e.detail === 'restart') {
@@ -124,8 +114,28 @@ function App() {
     return () => window.removeEventListener('sys-shutdown', handleSysShutdown);
   }, [playSound]);
 
-  // --- FETCH APPS ---
   useEffect(() => {
+    const staticFallbackApps = [
+      { id: 'system-os', name: 'My Computer', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w98_computer_musical_keyboard.ico" },
+      { id: 'network', name: 'Network Neighborhood', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w2k_network_neighborhood.ico" },
+      { id: 'recycle-bin', name: 'Recycle Bin', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w98_recycle_bin_full_cool.ico" },
+      { id: 'ie', name: 'Internet Explorer', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w2k_internet_explorer.ico" },
+      { id: 'notepad', name: 'Notepad', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w98_notepad.ico", isSystemTool: true },
+      { id: 'paint', name: 'Paint', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w98_paintbrush.ico", isSystemTool: true },
+      { id: 'minesweeper', name: 'Minesweeper', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w98_minesweeper.ico", isGame: true },
+      { id: 'luma-ai', name: 'LUMA.EXE', icon: lumaAiIcon },
+      { id: 'system-monitor', name: 'System Monitor', icon: sysMonitorIcon, isSystemTool: true },
+      { id: 'about-us', name: 'About Vishal', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w98_users.ico" },
+      { id: 'resume', name: 'Resume', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w2k_text_file.ico" },
+      { id: 'file-explorer', name: 'File Explorer', icon: fileExplorerIcon },
+      { id: 'projects-folder', name: 'Projects', icon: folderIcon },
+      { id: 'games-folder', name: 'Games', icon: gamesFolderIcon },
+      { id: 'tic-tac-toe', name: 'Tic Tac Toe', icon: ticTacToeIcon, isGame: true },
+      // FIXED: MS-DOS Prompt is no longer a game, it is a system tool
+      { id: 'problem-solver', name: 'MS-DOS Prompt', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w98_ms-dos_2.ico", isSystemTool: true },
+      { id: 'settings', name: 'Control Panel', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w98_directory_control_panel.ico" }
+    ];
+
     fetch(`${API_BASE_URL}/system-apps/`)
       .then((res) => {
         if (!res.ok) throw new Error('Network response was not ok');
@@ -142,36 +152,18 @@ function App() {
           backend_repo: item.backend_repo,
           live_link: item.live_link,
           project_type: item.project_type,
-          isProject: true // Tag to identify database items
+          isProject: true 
         }));
 
         setSystemApps([
-          { id: 'system-os', name: 'My Computer', icon: systemOsIcon },
-          { id: 'network', name: 'Network Neighborhood', icon: networkIcon },
-          { id: 'recycle-bin', name: 'Recycle Bin', icon: recycleBinIcon },
-          { id: 'ie', name: 'Internet Explorer', icon: ieIcon },
-          { id: 'notepad', name: 'Notepad', icon: notepadIcon, isSystemTool: true },
-          { id: 'paint', name: 'Paint', icon: paintIcon, isSystemTool: true },
-          { id: 'minesweeper', name: 'Minesweeper', icon: minesweeperIcon, isGame: true },
-          { id: 'luma-ai', name: 'LUMA.EXE', icon: lumaAiIcon },
-          { id: 'system-monitor', name: 'System Monitor', icon: sysMonitorIcon, isSystemTool: true },
-          { id: 'about-us', name: 'About Vishal', icon: aboutUsIcon },
-          { id: 'resume', name: 'Resume', icon: resumeIcon },
-          { id: 'file-explorer', name: 'File Explorer', icon: fileExplorerIcon },
-          { id: 'projects-folder', name: 'Projects', icon: folderIcon },
-          { id: 'games-folder', name: 'Games', icon: gamesFolderIcon },
-          { id: 'tic-tac-toe', name: 'Tic Tac Toe', icon: ticTacToeIcon, isGame: true },
-          { id: 'problem-solver', name: 'MS-DOS Prompt', icon: problemSolverIcon, isGame: true },
+          ...staticFallbackApps.filter(app => app.id !== 'settings'), 
           ...formattedApps,
-          { id: 'settings', name: 'Control Panel', icon: settingsIcon }
+          { id: 'settings', name: 'Control Panel', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w98_directory_control_panel.ico" }
         ]);
       })
       .catch((err) => {
-        console.error('Failed to load apps from backend:', err);
-        setSystemApps([
-          { id: 'system-os', name: 'My Computer', icon: systemOsIcon },
-          { id: 'settings', name: 'Control Panel', icon: settingsIcon }
-        ]);
+        console.error('Failed to load dynamic apps from backend:', err);
+        setSystemApps(staticFallbackApps);
       });
   }, []);
 
@@ -189,7 +181,7 @@ function App() {
       }, 2000);
     } else if (shutdownChoice === 'shutdown') {
       playSound('shutdown');
-      setTimeout(() => setBootState(4), 1000); // Go to safe to turn off screen
+      setTimeout(() => setBootState(4), 1000); 
     }
   };
 
@@ -201,7 +193,6 @@ function App() {
     >
       {isCrtMode && <div className="crt-overlay pointer-events-none z-[10001]"></div>}
 
-      {/* --- STATE 0: BIOS SCREEN --- */}
       {bootState === 0 && (
         <div className="absolute inset-0 bg-black text-[#c0c0c0] font-mono text-sm md:text-lg p-4 md:p-6 z-[9999] overflow-hidden" onClick={() => setBootState(1)}>
           <div className="absolute top-4 right-4 md:top-6 md:right-6 border border-yellow-500 text-yellow-500 px-2 py-1 flex items-center gap-2">
@@ -214,7 +205,6 @@ function App() {
         </div>
       )}
 
-      {/* --- STATE 1: SMART 90s SPLASH SCREEN --- */}
       {bootState === 1 && (
         <SplashScreen 
           apiUrl={API_BASE_URL} 
@@ -222,16 +212,14 @@ function App() {
         />
       )}
 
-      {/* --- STATE 3: OS DESKTOP ENVIRONMENT --- */}
       {bootState === 3 && (
         <>
           <SystemDialog />
 
           <Desktop
             systemApps={systemApps.filter(app => [
-              'system-os', 'network', 'recycle-bin', 'ie', 'notepad', 'paint', 'minesweeper', 'luma-ai', 'about-us', 'resume', 'file-explorer',
-              'projects-folder', 'games-folder', 'tic-tac-toe',
-              'problem-solver', 'settings'
+              'system-os', 'network', 'recycle-bin', 'ie', 'notepad', 'paint', 'system-monitor', 'problem-solver', 'luma-ai', 'about-us', 'resume', 'file-explorer',
+              'projects-folder', 'games-folder', 'settings'
             ].includes(app.id))}
             onOpenApp={(id) => openApp(systemApps.find(a => a.id === id))}
           />
@@ -240,7 +228,7 @@ function App() {
             <Window
               key={app.id}
               app={app}
-              fsApi={fsApi} // <--- ADD THIS
+              fsApi={fsApi}
               isActive={activeWindowId === app.id}
               onClose={() => closeApp(app.id)}
               onCloseApp={closeApp}
@@ -258,7 +246,6 @@ function App() {
             />
           ))}
 
-          {/* Custom Shutdown Modal */}
           {showShutdown && (
             <div className="absolute inset-0 z-[10000] flex items-center justify-center pointer-events-auto px-2">
               <div className="absolute inset-0 bg-transparent" onClick={(e) => { e.stopPropagation(); playSound('error'); }}></div>
@@ -269,7 +256,7 @@ function App() {
                 </div>
                 <div className="p-4 flex gap-4">
                   <div className="w-8 h-8 shrink-0 hidden sm:block">
-                    <img src={systemOsIcon} alt="Computer" className="w-full h-full object-contain" style={{ imageRendering: 'pixelated' }} />
+                    <img src="https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w98_computer_musical_keyboard.ico" alt="Computer" className="w-full h-full object-contain" style={{ imageRendering: 'pixelated' }} />
                   </div>
                   <div className="flex-1 font-sans text-sm text-os-text">
                     <p className="mb-2">What do you want the computer to do?</p>
@@ -326,7 +313,6 @@ function App() {
         </>
       )}
 
-      {/* --- STATE 4: SAFE TO SHUTDOWN SCREEN --- */}
       {bootState === 4 && (
         <div className="absolute inset-0 bg-black flex flex-col items-center justify-center z-[9999]">
           <div className="text-[#ff8c00] font-sans text-2xl font-bold text-center tracking-wide">
