@@ -10,6 +10,8 @@ import SplashScreen from './components/SplashScreen';
 import { useWindowManager } from './hooks/useWindowManager';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useSound } from './hooks/useSound';
+import { useIsMobile } from './hooks/useIsMobile'; // <-- NEW IMPORT
+import MobileOS from './mobile/MobileOS'; // <-- NEW IMPORT
 import { 
   folderIcon, fileExplorerIcon, gamesFolderIcon, ticTacToeIcon, lumaAiIcon, sysMonitorIcon 
 } from './utils/icons';
@@ -23,7 +25,10 @@ function App() {
   const [bootState, setBootState] = useState(0);
   const [bootText, setBootText] = useState([]);
   const fsApi = useFileSystem(systemApps);
+  
+  const isMobile = useIsMobile(); // <-- INITIALIZE MOBILE HOOK
 
+  // -- SHUTDOWN MODAL STATES --
   const [showShutdown, setShowShutdown] = useState(false);
   const [shutdownChoice, setShutdownChoice] = useState('shutdown');
 
@@ -42,7 +47,9 @@ function App() {
     activeWindowId
   } = useWindowManager();
 
+  // --- BOOT SEQUENCE LOGIC ---
   useEffect(() => {
+    // Instantly skip to Desktop if session storage is already set
     if (sessionStorage.getItem('vishal_os_splash_seen') === 'true') {
       setBootState(3);
       return;
@@ -85,6 +92,7 @@ function App() {
     }
   }, [bootState]);
 
+  // Handle BIOS Skip
   useEffect(() => {
     const handleGlobalKey = (e) => {
       if (e.key === 'Enter' && bootState === 0) {
@@ -95,6 +103,7 @@ function App() {
     return () => window.removeEventListener('keydown', handleGlobalKey);
   }, [bootState]);
 
+  // Handle System Reboot/Logoff events
   useEffect(() => {
     const handleSysShutdown = (e) => {
       if (e.detail === 'restart') {
@@ -114,6 +123,7 @@ function App() {
     return () => window.removeEventListener('sys-shutdown', handleSysShutdown);
   }, [playSound]);
 
+  // --- FETCH APPS ---
   useEffect(() => {
     const staticFallbackApps = [
       { id: 'system-os', name: 'My Computer', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w98_computer_musical_keyboard.ico" },
@@ -131,7 +141,6 @@ function App() {
       { id: 'projects-folder', name: 'Projects', icon: folderIcon },
       { id: 'games-folder', name: 'Games', icon: gamesFolderIcon },
       { id: 'tic-tac-toe', name: 'Tic Tac Toe', icon: ticTacToeIcon, isGame: true },
-      // FIXED: MS-DOS Prompt is no longer a game, it is a system tool
       { id: 'problem-solver', name: 'MS-DOS Prompt', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w98_ms-dos_2.ico", isSystemTool: true },
       { id: 'settings', name: 'Control Panel', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w98_directory_control_panel.ico" }
     ];
@@ -193,6 +202,7 @@ function App() {
     >
       {isCrtMode && <div className="crt-overlay pointer-events-none z-[10001]"></div>}
 
+      {/* --- STATE 0: BIOS SCREEN --- */}
       {bootState === 0 && (
         <div className="absolute inset-0 bg-black text-[#c0c0c0] font-mono text-sm md:text-lg p-4 md:p-6 z-[9999] overflow-hidden" onClick={() => setBootState(1)}>
           <div className="absolute top-4 right-4 md:top-6 md:right-6 border border-yellow-500 text-yellow-500 px-2 py-1 flex items-center gap-2">
@@ -205,6 +215,7 @@ function App() {
         </div>
       )}
 
+      {/* --- STATE 1: SMART 90s SPLASH SCREEN --- */}
       {bootState === 1 && (
         <SplashScreen 
           apiUrl={API_BASE_URL} 
@@ -212,7 +223,30 @@ function App() {
         />
       )}
 
-      {bootState === 3 && (
+      {/* --- STATE 3: OS ENVIRONMENT FORK --- */}
+      {bootState === 3 && isMobile && (
+        <MobileOS
+          systemApps={systemApps}
+          openApps={openApps}
+          activeWindowId={activeWindowId}
+          fsApi={fsApi}
+          openApp={(id) => openApp(systemApps.find(a => a.id === id))}
+          closeApp={closeApp}
+          focusWindow={focusWindow}
+          minimizeWindow={minimizeWindow}
+          toggleMaximize={toggleMaximize}
+          updateWindowPosition={updateWindowPosition}
+          isCrtMode={isCrtMode}
+          setIsCrtMode={setIsCrtMode}
+          bgTheme={bgTheme}
+          setBgTheme={setBgTheme}
+          playSound={playSound}
+          onShutDown={() => { setShutdownChoice('shutdown'); setShowShutdown(true); }} // <-- NEW
+          onLogOff={() => { setShutdownChoice('logoff'); setShowShutdown(true); }}     // <-- NEW
+        />
+      )}
+
+      {bootState === 3 && !isMobile && (
         <>
           <SystemDialog />
 
@@ -246,6 +280,7 @@ function App() {
             />
           ))}
 
+          {/* Custom Shutdown Modal */}
           {showShutdown && (
             <div className="absolute inset-0 z-[10000] flex items-center justify-center pointer-events-auto px-2">
               <div className="absolute inset-0 bg-transparent" onClick={(e) => { e.stopPropagation(); playSound('error'); }}></div>
@@ -313,6 +348,7 @@ function App() {
         </>
       )}
 
+      {/* --- STATE 4: SAFE TO SHUTDOWN SCREEN --- */}
       {bootState === 4 && (
         <div className="absolute inset-0 bg-black flex flex-col items-center justify-center z-[9999]">
           <div className="text-[#ff8c00] font-sans text-2xl font-bold text-center tracking-wide">
