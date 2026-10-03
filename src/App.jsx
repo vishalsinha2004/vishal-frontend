@@ -10,8 +10,8 @@ import SplashScreen from './components/SplashScreen';
 import { useWindowManager } from './hooks/useWindowManager';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useSound } from './hooks/useSound';
-import { useIsMobile } from './hooks/useIsMobile'; // <-- NEW IMPORT
-import MobileOS from './mobile/MobileOS'; // <-- NEW IMPORT
+import { useIsMobile } from './hooks/useIsMobile';
+import MobileOS from './mobile/MobileOS';
 import { 
   folderIcon, fileExplorerIcon, gamesFolderIcon, ticTacToeIcon, lumaAiIcon, sysMonitorIcon 
 } from './utils/icons';
@@ -26,7 +26,7 @@ function App() {
   const [bootText, setBootText] = useState([]);
   const fsApi = useFileSystem(systemApps);
   
-  const isMobile = useIsMobile(); // <-- INITIALIZE MOBILE HOOK
+  const isMobile = useIsMobile(); 
 
   // -- SHUTDOWN MODAL STATES --
   const [showShutdown, setShowShutdown] = useState(false);
@@ -176,6 +176,23 @@ function App() {
       });
   }, []);
 
+  // --- URL ROUTING FIX ---
+  useEffect(() => {
+    // Wait for the OS to fully boot (bootState === 3) before opening deep-linked apps
+    if (bootState === 3 && systemApps.length > 0) {
+      const searchParams = new URLSearchParams(window.location.search);
+      const appToOpen = searchParams.get('app');
+      
+      if (appToOpen) {
+        // Find the app object in your systemApps array
+        const targetApp = systemApps.find(a => a.id === appToOpen);
+        if (targetApp) {
+          openApp(targetApp); // Pass the full object to the window manager, not just the ID
+        }
+      }
+    }
+  }, [bootState, systemApps, openApp]);
+
   const confirmShutdown = () => {
     setShowShutdown(false);
     if (shutdownChoice === 'logoff') {
@@ -241,8 +258,8 @@ function App() {
           bgTheme={bgTheme}
           setBgTheme={setBgTheme}
           playSound={playSound}
-          onShutDown={() => { setShutdownChoice('shutdown'); setShowShutdown(true); }} // <-- NEW
-          onLogOff={() => { setShutdownChoice('logoff'); setShowShutdown(true); }}     // <-- NEW
+          onShutDown={() => { setShutdownChoice('shutdown'); setShowShutdown(true); }}
+          onLogOff={() => { setShutdownChoice('logoff'); setShowShutdown(true); }}
         />
       )}
 
