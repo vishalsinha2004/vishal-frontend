@@ -1,22 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useSound } from '../hooks/useSound';
-import Settings from '../components/Settings';
-import AboutMe from '../components/AboutMe';
-import ProjectPage from '../components/Project';
+import MobileSettings from './MobileSettings';
+
 import MobileFileExplorer from './MobileFileExplorer';
-import Resume from '../components/Resume';
-import TicTacToe from '../components/TicTacToe';
-import CommandPrompt from '../components/CommandPrompt';
+
+
+import MobileCommandPrompt from './MobileCommandPrompt';
 import MobileMyComputer from './MobileMyComputer'; // <-- NEW IMPORT
-import RecycleBin from '../components/RecycleBin';
-import NetworkNeighborhood from '../components/NetworkNeighborhood';
+import MobileRecycleBin from './MobileRecycleBin';
+import MobileNetworkNeighborhood from './MobileNetworkNeighborhood';
 import InternetExplorer from '../components/InternetExplorer';
-import VoiceAssistant from '../components/VoiceAssistant';
+import MobileVoiceAssistant from './MobileVoiceAssistant';
 import SystemMonitor from '../components/SystemMonitor';
-import Notepad from '../components/Notepad';
-import Paint from '../components/Paint';
-import Minesweeper from '../components/Minesweeper';
+import MobileNotepad from './MobileNotepad';
+import MobilePaint from './MobilePaint';
+import MobileTicTacToe from './MobileTicTacToe'; // <-- ADD THIS IMPORT
+import MobileMinesweeper from './MobileMinesweeper'; // <-- ADD THIS IMPORT
 import { showSystemDialog } from '../components/SystemDialog';
+import MobileAboutMe from './MobileAboutMe'; // <-- ADD THIS IMPORT
+import MobileResume from './MobileResume'; // <-- ADD THIS IMPORT
+import MobileProjectPage from './MobileProjectPage'; // <-- ADD THIS IMPORT
 
 // Helpers to parse GitHub data for dynamic projects
 const getRepoDetails = (url) => {
@@ -128,37 +131,37 @@ const MobileWindow = ({
   };
 
   const renderAppContent = () => {
-    if (app.id === 'recycle-bin' || app.id === 'recycle') return <RecycleBin fsApi={fsApi} onOpenApp={onOpenApp} />;
-    if (app.id === 'settings') return <Settings bgTheme={bgTheme} setBgTheme={setBgTheme} isCrtMode={isCrtMode} setIsCrtMode={setIsCrtMode} />;
-    if (app.id === 'network') return <NetworkNeighborhood />;
+    if (app.id === 'recycle-bin' || app.id === 'recycle') return <MobileRecycleBin fsApi={fsApi} onOpenApp={onOpenApp} />;
+    if (app.id === 'settings') return <MobileSettings bgTheme={bgTheme} setBgTheme={setBgTheme} isCrtMode={isCrtMode} setIsCrtMode={setIsCrtMode} />;
+    if (app.id === 'network') return <MobileNetworkNeighborhood onOpenApp={onOpenApp} />;
     if (app.id === 'ie') return <InternetExplorer initialUrl={app.live_link} />;
-    if (app.id === 'luma-ai') return <VoiceAssistant />;
+    if (app.id === 'luma-ai') return <MobileVoiceAssistant />;
     if (app.id === 'system-monitor') return <SystemMonitor openWindowCount={openWindowCount} />;
-    if (app.id === 'notepad') return <Notepad />;
-    if (app.id === 'paint') return <Paint />;
-    if (app.id === 'minesweeper') return <Minesweeper />;
+    if (app.id === 'notepad') return <MobileNotepad />;
+    if (app.id === 'paint') return <MobilePaint />;
+    if (app.id === 'minesweeper') return <MobileMinesweeper />;
     
     if (app.id === 'system-os') return <MobileMyComputer onOpenApp={onOpenApp} />; // <-- UPDATE THIS LINE
     
-    if (app.id === 'about-us' || app.name.toLowerCase() === 'about vishal') {
+   if (app.id === 'about-us' || app.name.toLowerCase() === 'about vishal') {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
-      return <AboutMe apiUrl={apiUrl} onOpenApp={onOpenApp} />;
+      return <MobileAboutMe apiUrl={apiUrl} />;
     }
 
-    if (app.id === 'resume' || app.name.toLowerCase() === 'resume') return <Resume />;
-    if (app.id === 'tic-tac-toe') return <TicTacToe />;
+    if (app.id === 'resume' || app.name.toLowerCase() === 'resume') return <MobileResume />;
+    if (app.id === 'tic-tac-toe') return <MobileTicTacToe />;
     if (app.id === 'problem-solver' || app.name.toLowerCase() === 'ms-dos prompt') {
-      return <CommandPrompt onOpenApp={onOpenApp} onCloseApp={onCloseApp} systemApps={systemApps} isCrtMode={isCrtMode} setIsCrtMode={setIsCrtMode} fsApi={fsApi} />;
+      return <MobileCommandPrompt onOpenApp={onOpenApp} onClose={onClose} systemApps={systemApps} fsApi={fsApi} />;
     }
     
     if (app.id === 'games-folder') {
       const gameApps = systemApps.filter(a => a.isGame);
-      return <ProjectPage apps={gameApps} onOpenApp={onOpenApp} />;
+      return <MobileProjectPage apps={gameApps} onOpenApp={onOpenApp} />;
     }
 
     if (app.id === 'projects-folder') {
       const projectApps = systemApps.filter(a => a.isProject);
-      return <ProjectPage apps={projectApps} onOpenApp={onOpenApp} />;
+      return <MobileProjectPage apps={projectApps} onOpenApp={onOpenApp} />;
     }
 
     if (app.id === 'file-explorer') return <MobileFileExplorer fsApi={fsApi} systemApps={systemApps} onOpenApp={onOpenApp} />;

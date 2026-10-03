@@ -6,7 +6,7 @@ import MobileTaskbar from './MobileTaskbar';
 import MobileStartMenu from './MobileStartMenu';
 import MobileWindow from './MobileWindow';
 import MobileWindowSwitcher from './MobileWindowSwitcher';
-import MobileSearch from './MobileSearch'; // <-- NEW IMPORT
+import MobileSearch from './MobileSearch'; 
 
 const MobileOS = ({
   systemApps,
@@ -28,7 +28,6 @@ const MobileOS = ({
   onLogOff
 }) => {
   
-  // Mobile Overlay States
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
   const [isWindowSwitcherOpen, setIsWindowSwitcherOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -44,16 +43,13 @@ const MobileOS = ({
       <MobileStatusBar />
       <SystemDialog />
       
-      {/* Central Viewport - Contains Grid and Windows */}
       <div className="flex-1 relative overflow-hidden flex flex-col">
-        {/* Mobile App Grid */}
         <MobileHome 
           systemApps={desktopShortcuts} 
           onOpenApp={openApp} 
           playSound={playSound} 
         />
 
-        {/* Mobile Windows */}
         {openApps.map((app) => (
           <MobileWindow
             key={app.id}
@@ -62,7 +58,7 @@ const MobileOS = ({
             isActive={activeWindowId === app.id}
             onClose={() => closeApp(app.id)}
             onCloseApp={closeApp}
-            onOpenApp={(id) => openApp(systemApps.find(a => a.id === id))}
+            onOpenApp={openApp} // <-- FIXED: Removed the duplicate .find() wrapper!
             systemApps={systemApps}
             onFocus={() => { playSound('click'); focusWindow(app.id); }}
             onMinimize={() => minimizeWindow(app.id)}
@@ -75,38 +71,27 @@ const MobileOS = ({
         ))}
       </div>
 
-      {/* --- MOBILE OVERLAYS --- */}
-      
-      {/* Mobile Task/Window Switcher Overlay */}
       {isWindowSwitcherOpen && (
         <MobileWindowSwitcher
           openApps={openApps}
           activeWindowId={activeWindowId}
-          focusWindow={(id) => {
-            playSound('click');
-            focusWindow(id);
-          }}
+          focusWindow={(id) => { playSound('click'); focusWindow(id); }}
           closeWindow={closeApp}
           closeSwitcher={() => setIsWindowSwitcherOpen(false)}
         />
       )}
 
-      {/* Mobile Start Menu Overlay */}
       {isStartMenuOpen && (
         <MobileStartMenu
           systemApps={systemApps}
           onOpenApp={openApp}
           closeMenu={() => setIsStartMenuOpen(false)}
-          onOpenSearch={() => {
-            setIsSearchOpen(true);
-            setIsStartMenuOpen(false);
-          }}
+          onOpenSearch={() => { setIsSearchOpen(true); setIsStartMenuOpen(false); }}
           onShutDown={onShutDown}
           onLogOff={onLogOff}
         />
       )}
 
-      {/* Mobile Search Overlay */}
       {isSearchOpen && (
         <MobileSearch 
           systemApps={systemApps}
@@ -115,7 +100,6 @@ const MobileOS = ({
         />
       )}
 
-      {/* Mobile Bottom Navigation Taskbar */}
       <MobileTaskbar 
         openApps={openApps}
         isStartMenuOpen={isStartMenuOpen}
