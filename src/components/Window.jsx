@@ -6,6 +6,7 @@ import ProjectPage from './Project';
 import FileExplorer from './FileExplorer';
 import Resume from './Resume';
 import TicTacToe from './TicTacToe';
+import Snake from './Snake';
 import ProblemSolver from './ProblemSolver';
 import { useSound } from '../hooks/useSound';
 import ContextMenu from './ContextMenu'; // <-- NEW IMPORT
@@ -232,6 +233,7 @@ const Window = ({
     if (app.id === 'notepad') return <Notepad />; // <-- ADD THIS LINE
     if (app.id === 'paint') return <Paint />; // <-- ADD THIS LINE
     if (app.id === 'minesweeper') return <Minesweeper />; // <-- ADD THIS LINE
+    if (app.id === 'snake') return <Snake />;
     if (app.id === 'system-os') {
       return <MyComputer onOpenApp={onOpenApp} />;
     }

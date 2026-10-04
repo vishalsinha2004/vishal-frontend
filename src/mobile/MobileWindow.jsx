@@ -16,6 +16,7 @@ import MobileNotepad from './MobileNotepad';
 import MobilePaint from './MobilePaint';
 import MobileTicTacToe from './MobileTicTacToe'; // <-- ADD THIS IMPORT
 import MobileMinesweeper from './MobileMinesweeper'; // <-- ADD THIS IMPORT
+import MobileSnake from './MobileSnake';
 import { showSystemDialog } from '../components/SystemDialog';
 import MobileAboutMe from './MobileAboutMe'; // <-- ADD THIS IMPORT
 import MobileResume from './MobileResume'; // <-- ADD THIS IMPORT
@@ -140,6 +141,7 @@ const MobileWindow = ({
     if (app.id === 'notepad') return <MobileNotepad />;
     if (app.id === 'paint') return <MobilePaint />;
     if (app.id === 'minesweeper') return <MobileMinesweeper />;
+    if (app.id === 'snake') return <MobileSnake />;
     
     if (app.id === 'system-os') return <MobileMyComputer onOpenApp={onOpenApp} />; // <-- UPDATE THIS LINE
     

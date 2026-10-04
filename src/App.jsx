@@ -133,6 +133,7 @@ function App() {
       { id: 'notepad', name: 'Notepad', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w98_notepad.ico", isSystemTool: true },
       { id: 'paint', name: 'Paint', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w98_paintbrush.ico", isSystemTool: true },
       { id: 'minesweeper', name: 'Minesweeper', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w98_minesweeper.ico", isGame: true },
+      { id: 'snake', name: 'Snake', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w98_joystick.ico", isGame: true },
       { id: 'luma-ai', name: 'LUMA.EXE', icon: lumaAiIcon },
       { id: 'system-monitor', name: 'System Monitor', icon: sysMonitorIcon, isSystemTool: true },
       { id: 'about-us', name: 'About Vishal', icon: "https://cdn.jsdelivr.net/gh/trapd00r/win95-winxp_icons@master/icons/w98_users.ico" },
