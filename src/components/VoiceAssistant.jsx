@@ -20,6 +20,13 @@ const VoiceAssistant = () => {
   const recognitionRef = useRef(null);
   const isMounted = useRef(true);
 
+  // --- DYNAMIC SEO INJECTION ---
+  useEffect(() => {
+    document.title = "LUMA.EXE Voice Assistant | Vishal OS";
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.content = "Interact with LUMA.EXE, an AI-powered voice assistant engineered by Vishal Sinha.";
+  }, []);
+
   // Auto-scroll transcript
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -197,7 +204,10 @@ const VoiceAssistant = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-os-gray p-2 font-sans select-none">
+    <section className="flex flex-col h-full bg-os-gray p-2 font-sans select-none" aria-label="LUMA AI Assistant">
+      {/* Invisible H1 for SEO context */}
+      <h1 className="sr-only">LUMA.EXE Artificial Intelligence Voice Assistant</h1>
+
       <div className="flex gap-4 mb-2 h-32 shrink-0">
         {/* Visualizer / Avatar */}
         <div className="w-32 h-32 bg-black border-2 border-os-dark-gray shadow-retro-inset flex flex-col items-center justify-center text-green-500 font-pixel text-4xl sm:text-5xl shrink-0">
@@ -234,7 +244,10 @@ const VoiceAssistant = () => {
       </div>
 
       {/* Transcript Log */}
-      <div className="flex-1 bg-black border border-os-white shadow-retro-inset p-2 overflow-y-auto font-terminal text-[11px] text-green-500 mb-2 leading-relaxed min-h-[100px]">
+      <div 
+        className="flex-1 bg-black border border-os-white shadow-retro-inset p-2 overflow-y-auto font-terminal text-[11px] text-green-500 mb-2 leading-relaxed min-h-[100px]"
+        aria-live="polite"
+      >
          {chatLog.map((log, i) => (
             <div key={i} className={`mb-1 break-words
               ${log.startsWith('[USER]') ? 'text-yellow-400' : ''} 
@@ -260,7 +273,7 @@ const VoiceAssistant = () => {
         />
         <button type="submit" className="retro-btn px-4 font-bold text-xs shrink-0" disabled={status === 'PROCESSING'}>Send</button>
       </form>
-    </div>
+    </section>
   );
 };
 
