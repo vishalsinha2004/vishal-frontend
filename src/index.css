@@ -10,7 +10,6 @@
   --color-os-white: #ffffff;
   --color-os-text: #000000;
 
-  /* Strictly enforce ONLY the W95FA font. No Arial or Tahoma fallbacks allowed. */
   --font-sans: 'W95FA';
   --font-mono: 'Courier New', Courier, monospace;
   --font-pixel: 'VT323', monospace;
@@ -19,22 +18,51 @@
   --shadow-retro-inset: inset -1px -1px #fff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf, inset 2px 2px grey;
 }
 
-/* Strictly disable font smoothing globally so the pixel font remains jagged and slim */
 * {
   -webkit-font-smoothing: none !important;
   -moz-osx-font-smoothing: grayscale !important;
   font-smooth: never !important;
+  box-sizing: border-box;
 }
 
-html,
-body {
-  font-family: var(--font-sans);
-  text-rendering: crispEdges;
-  overscroll-behavior: none;
-  letter-spacing: 0.3px; 
+/* --- CRITICAL VIEWPORT LOCKDOWN --- */
+@layer base {
+  html, body, #root {
+    width: 100%;
+    height: 100dvh; /* Dynamic viewport prevents address-bar overflow */
+    margin: 0;
+    padding: 0;
+    overflow: hidden !important; /* Strict block on page-level scrolling */
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+
+  input, textarea {
+    @apply select-auto;
+    -webkit-user-select: auto;
+    user-select: auto;
+  }
 }
 
-/* Custom font aliases for backward compatibility with your existing classes */
+/* --- MOBILE OS FIXED SHELL --- */
+.mobile-os {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  
+  /* Pushes UI inward to avoid iPhone notches and Android bottom gesture bars */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
 .font-system { font-family: var(--font-sans); }
 .font-terminal { font-family: var(--font-mono); }
 .font-pixel { font-family: var(--font-pixel); }
@@ -43,10 +71,9 @@ body {
 /* --- CRT DISPLAY EFFECTS --- */
 .crt-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
+  width: 100%;
+  height: 100dvh; /* Converted to dvh to match layout */
   pointer-events: none;
   z-index: 10001;
   background: 

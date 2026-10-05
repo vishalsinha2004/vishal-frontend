@@ -39,11 +39,12 @@ const MobileOS = ({
   ].includes(app.id));
 
   return (
-    <div className="flex flex-col h-full w-full relative z-10 overflow-hidden font-sans" style={{ backgroundColor: bgTheme }}>
+<div className="mobile-os z-10 font-sans" style={{ backgroundColor: bgTheme }}>
       <MobileStatusBar />
       <SystemDialog />
       
-      <div className="flex-1 relative overflow-hidden flex flex-col">
+      {/* min-h-0 strictly forces this flex-container to stay inside the viewport bounds */}
+      <div className="flex-1 relative overflow-hidden flex flex-col min-h-0">
         <MobileHome 
           systemApps={desktopShortcuts} 
           onOpenApp={openApp} 
@@ -58,7 +59,7 @@ const MobileOS = ({
             isActive={activeWindowId === app.id}
             onClose={() => closeApp(app.id)}
             onCloseApp={closeApp}
-            onOpenApp={openApp} // <-- FIXED: Removed the duplicate .find() wrapper!
+            onOpenApp={openApp}
             systemApps={systemApps}
             onFocus={() => { playSound('click'); focusWindow(app.id); }}
             onMinimize={() => minimizeWindow(app.id)}

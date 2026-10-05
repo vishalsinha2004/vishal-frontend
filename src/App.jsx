@@ -213,8 +213,8 @@ function App() {
   };
 
   return (
-    <div
-      className="relative h-screen w-screen text-os-text overflow-hidden flex flex-col font-sans select-none"
+<div
+      className="relative h-[100dvh] w-full text-os-text overflow-hidden flex flex-col font-sans select-none"
       style={{ backgroundColor: bgTheme }}
       onClick={() => isStartMenuOpen && setIsStartMenuOpen(false)}
     >
