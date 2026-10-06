@@ -97,10 +97,10 @@ const MobileMinesweeper = () => {
   };
 
   return (
-    <div className="flex flex-col items-center pt-4 h-full bg-os-gray font-sans select-none overflow-y-auto custom-scrollbar">
+    <div className="flex flex-col items-center pt-4 flex-1 min-h-0 w-full bg-os-gray font-sans select-none overflow-y-auto custom-scrollbar">
       
       {/* Tool/Mode Selector for Mobile */}
-      <div className="flex gap-2 mb-4 bg-os-gray p-1 shadow-retro-outset border border-os-dark-gray">
+      <div className="flex gap-2 mb-4 bg-os-gray p-1 shadow-retro-outset border border-os-dark-gray shrink-0">
         <button 
           onClick={() => { playSound('click'); setMode('dig'); }}
           className={`retro-btn px-4 py-1 font-bold flex items-center gap-1 ${mode === 'dig' ? 'shadow-retro-inset bg-[#e0e0e0]' : ''}`}
@@ -115,7 +115,7 @@ const MobileMinesweeper = () => {
         </button>
       </div>
 
-      <div className="bg-os-gray shadow-retro-outset border border-os-dark-gray p-2 w-fit">
+      <div className="bg-os-gray shadow-retro-outset border border-os-dark-gray p-2 w-fit shrink-0 mb-4">
         
         {/* Header LCD Panel */}
         <div className="flex justify-between items-center bg-os-gray shadow-retro-inset border border-os-dark-gray p-2 mb-2">

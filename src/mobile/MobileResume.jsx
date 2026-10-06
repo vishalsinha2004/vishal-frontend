@@ -1,54 +1,80 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSound } from '../hooks/useSound';
 
 const MobileResume = () => {
   const { playSound } = useSound();
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+  const [resumeUrl, setResumeUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // --- DYNAMIC SEO INJECTION ---
+  useEffect(() => {
+    document.title = "Resume | Vishal Sinha";
+  }, []);
+
+  // --- FETCH REAL RESUME FROM BACKEND ---
+  useEffect(() => {
+    fetch(`${apiUrl}/about-us/`)
+      .then((res) => {
+        if (!res.ok) throw new Error('API Endpoint not found');
+        return res.json();
+      })
+      .then((data) => {
+        const profile = Array.isArray(data) ? data[0] : data;
+        if (profile && profile.resume) {
+          setResumeUrl(profile.resume);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Resume Fetch Error:", err);
+        setLoading(false);
+      });
+  }, [apiUrl]);
+
+  const handleExternalAction = () => {
+    playSound('click');
+    if (resumeUrl) {
+      window.open(resumeUrl, '_blank');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col flex-1 min-h-0 w-full h-full bg-os-gray text-black font-sans text-sm items-center justify-center shadow-retro-inset">
+        Reading Document Data...
+      </div>
+    );
+  }
+
+  if (!resumeUrl) {
+    return (
+      <div className="flex flex-col flex-1 min-h-0 w-full h-full bg-os-gray text-black font-sans text-sm items-center justify-center p-4 text-center shadow-retro-inset">
+        <div className="bg-white shadow-retro-outset p-6 border border-os-dark-gray max-w-[300px]">
+          <p className="font-bold mb-2">Document Not Found</p>
+          <p className="text-xs text-os-dark-gray">Please upload a valid PDF document via the System Admin Panel.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col h-full bg-white text-black font-sans text-sm">
-      
+    <article className="flex flex-col flex-1 min-h-0 w-full h-full bg-os-gray text-black font-sans text-sm">
+      {/* Invisible H1 for Google Search Indexing */}
+      <h1 className="sr-only">Vishal Sinha Resume Document</h1>
 
-      {/* Document Viewer */}
-      <div className="flex-1 overflow-y-auto p-2 sm:p-4 custom-scrollbar bg-[#808080] flex justify-center">
-         <div className="bg-white shadow-retro-outset w-full max-w-[400px] p-4 text-xs font-serif leading-relaxed">
-            
-            <h1 className="text-xl font-bold mb-1 border-b-2 border-black pb-1 uppercase font-sans">Vishal Sinha</h1>
-            <p className="mb-4">Software Developer | Ahmedabad, Gujarat</p>
-            
-            <h2 className="text-sm font-bold bg-os-gray border border-black px-1 mb-2 font-sans shadow-retro-outset">EXPERIENCE</h2>
-            <div className="mb-3">
-              <p className="font-bold">Data Science Intern — TECHMICRE</p>
-              <p className="italic mb-1">June 2025 - July 2025 | Ahmedabad</p>
-              <ul className="list-disc pl-4 space-y-1">
-                <li>Developed AI systems, CV models, and interactive retrieval-augmented generation pipelines.</li>
-                <li>Built automated assistants using Gemini API and LangChain.</li>
-              </ul>
-            </div>
-
-            <h2 className="text-sm font-bold bg-os-gray border border-black px-1 mb-2 font-sans shadow-retro-outset">PROJECTS</h2>
-            <div className="mb-3 space-y-2">
-              <div>
-                <p className="font-bold">Vishal OS 98</p>
-                <p>Interactive retro Windows 98-themed portfolio operating system with mobile responsivness.</p>
-              </div>
-              <div>
-                <p className="font-bold">MarkAI</p>
-                <p>Voice-controlled virtual assistant integrating Google Speech Recognition and OpenCV controls.</p>
-              </div>
-            </div>
-
-            <h2 className="text-sm font-bold bg-os-gray border border-black px-1 mb-2 font-sans shadow-retro-outset">EDUCATION</h2>
-            <div className="mb-3">
-              <p className="font-bold">Bachelor of Computer Applications (B.C.A.)</p>
-              <p className="italic">Shreyarth University</p>
-            </div>
-
-            <h2 className="text-sm font-bold bg-os-gray border border-black px-1 mb-2 font-sans shadow-retro-outset">CERTIFICATIONS & SKILLS</h2>
-            <p className="mb-1"><strong>Skills:</strong> React, Node.js, Python, Django, Tailwind CSS, MySQL, AI/ML.</p>
-            <p><strong>Certs:</strong> Python (Basic) Certificate - HackerRank (March 2025).</p>
+      {/* Document Viewer (Strict internal scrolling) */}
+      <div className="flex-1 min-h-0 overflow-hidden bg-[#808080] p-1 sm:p-2 flex flex-col relative shadow-retro-inset border-t border-white">
+         <div className="w-full h-full bg-white shadow-retro-outset border border-black relative overflow-hidden flex flex-col">
+            <iframe 
+              src={`${resumeUrl}#toolbar=0&navpanes=0&scrollbar=1&view=FitH`} 
+              title="Resume PDF Viewer" 
+              className="w-full h-full flex-1 border-none min-h-0"
+              style={{ backgroundColor: '#ffffff' }}
+            />
          </div>
       </div>
-    </div>
+    </article>
   );
 };
 

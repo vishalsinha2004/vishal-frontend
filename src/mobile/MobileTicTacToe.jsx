@@ -40,8 +40,8 @@ const MobileTicTacToe = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-start pt-6 h-full bg-os-gray font-sans select-none overflow-y-auto custom-scrollbar">
-      <div className="bg-os-gray shadow-retro-outset border border-os-dark-gray p-4 mb-6 w-[90%] max-w-[320px]">
+    <div className="flex flex-col items-center justify-start py-6 flex-1 min-h-0 w-full bg-os-gray font-sans select-none overflow-y-auto custom-scrollbar">
+      <div className="bg-os-gray shadow-retro-outset border border-os-dark-gray p-4 mb-6 w-[90%] max-w-[320px] shrink-0">
         
         {/* Score/Status Board */}
         <div className="bg-white shadow-retro-inset border border-os-dark-gray p-2 mb-4 text-center font-bold text-lg">
@@ -72,7 +72,7 @@ const MobileTicTacToe = () => {
 
       <button 
         onClick={resetGame} 
-        className="retro-btn px-8 py-2 font-bold text-sm"
+        className="retro-btn px-8 py-2 font-bold text-sm shrink-0"
       >
         Restart Game
       </button>

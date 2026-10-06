@@ -39,12 +39,12 @@ const MobileOS = ({
   ].includes(app.id));
 
   return (
-<div className="mobile-os z-10 font-sans" style={{ backgroundColor: bgTheme }}>
+    <div className="mobile-os z-10 font-sans relative" style={{ backgroundColor: bgTheme }}>
       <MobileStatusBar />
       <SystemDialog />
       
       {/* min-h-0 strictly forces this flex-container to stay inside the viewport bounds */}
-      <div className="flex-1 relative overflow-hidden flex flex-col min-h-0">
+      <div className="flex-1 relative overflow-hidden flex flex-col min-h-0 w-full">
         <MobileHome 
           systemApps={desktopShortcuts} 
           onOpenApp={openApp} 

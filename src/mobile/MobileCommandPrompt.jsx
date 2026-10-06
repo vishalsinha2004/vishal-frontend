@@ -93,7 +93,7 @@ const MobileCommandPrompt = ({ systemApps, onOpenApp, onClose, fsApi }) => {
 
   return (
     <div 
-      className="flex-1 bg-black text-[#c0c0c0] font-mono text-xs sm:text-sm p-2 overflow-y-auto custom-scrollbar"
+      className="flex-1 min-h-0 w-full h-full bg-black text-[#c0c0c0] font-mono text-xs sm:text-sm p-2 overflow-y-auto custom-scrollbar"
       onClick={() => inputRef.current && inputRef.current.focus()}
     >
       {history.map((line, i) => (
@@ -107,14 +107,14 @@ const MobileCommandPrompt = ({ systemApps, onOpenApp, onClose, fsApi }) => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="flex-1 bg-transparent text-[#c0c0c0] outline-none font-mono"
+          className="flex-1 min-w-0 bg-transparent text-[#c0c0c0] outline-none font-mono"
           autoComplete="off"
           spellCheck="false"
           autoCapitalize="none"
           autoCorrect="off"
         />
       </div>
-      <div ref={endRef} className="h-4" /> {/* Padding to ensure scrolling clears keyboard */}
+      <div ref={endRef} className="h-4 shrink-0" /> {/* Padding to ensure scrolling clears keyboard */}
     </div>
   );
 };

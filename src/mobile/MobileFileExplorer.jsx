@@ -27,7 +27,7 @@ const MobileFileExplorer = ({ fsApi, systemApps, onOpenApp }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white text-black font-sans text-sm">
+    <div className="flex flex-col flex-1 min-h-0 w-full h-full bg-white text-black font-sans text-sm">
       {/* Mobile Toolbar */}
       <div className="flex items-center p-1.5 bg-os-gray border-b border-os-dark-gray gap-2 shrink-0">
         <button 
@@ -37,13 +37,13 @@ const MobileFileExplorer = ({ fsApi, systemApps, onOpenApp }) => {
         >
           Up
         </button>
-        <div className="flex-1 shadow-retro-inset bg-white px-2 py-1.5 truncate text-xs border border-os-dark-gray">
+        <div className="flex-1 min-w-0 shadow-retro-inset bg-white px-2 py-1.5 truncate text-xs border border-os-dark-gray">
           {currentPath}
         </div>
       </div>
 
-      {/* Directory Contents List */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-1 bg-white">
+      {/* Directory Contents List (Strict internal scrolling) */}
+      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-1 bg-white">
         {Object.keys(currentNode).length === 0 ? (
           <div className="text-os-dark-gray text-xs italic p-4 text-center">
             This folder is empty.

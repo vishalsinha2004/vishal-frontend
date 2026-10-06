@@ -20,7 +20,7 @@ const MobileTaskbar = ({
           if (!isStartMenuOpen) playSound('click');
           toggleStartMenu(e);
         }}
-        className={`flex items-center justify-center gap-1 px-3 h-[28px] font-bold text-black border focus:outline-none
+        className={`flex items-center justify-center shrink-0 gap-1 px-3 h-[28px] font-bold text-black border focus:outline-none
           ${isStartMenuOpen ? 'bg-[#d0d0d0] shadow-retro-inset outline-dotted outline-1 outline-black outline-offset-[-3px]' : 'bg-os-gray shadow-retro-outset active:shadow-retro-inset hover:bg-[#e0e0e0]'}`}
       >
         <span className="text-blue-900 italic text-sm">VISHAL</span>
@@ -33,10 +33,10 @@ const MobileTaskbar = ({
           onToggleWindowSwitcher(); 
         }}
         disabled={openApps.length === 0}
-        className={`flex-1 flex items-center justify-center gap-1 px-2 h-[28px] text-xs font-bold font-dialog border
+        className={`flex-1 min-w-0 flex items-center justify-center gap-1 px-2 h-[28px] text-xs font-bold font-dialog border
           ${openApps.length === 0 ? 'opacity-60 shadow-retro-outset text-os-dark-gray' : 'shadow-retro-outset active:shadow-retro-inset text-black'}`}
       >
-        {openApps.length > 0 ? `WINDOWS (${openApps.length})` : 'DESKTOP'}
+        <span className="truncate">{openApps.length > 0 ? `WINDOWS (${openApps.length})` : 'DESKTOP'}</span>
       </button>
 
       {/* Search / Find Button */}
@@ -45,7 +45,7 @@ const MobileTaskbar = ({
           playSound('click'); 
           onOpenSearch(); 
         }}
-        className="flex items-center justify-center px-4 h-[28px] text-xs font-bold font-dialog border shadow-retro-outset active:shadow-retro-inset text-black"
+        className="flex shrink-0 items-center justify-center px-4 h-[28px] text-xs font-bold font-dialog border shadow-retro-outset active:shadow-retro-inset text-black"
       >
         FIND
       </button>

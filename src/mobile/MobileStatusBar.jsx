@@ -29,12 +29,12 @@ const MobileStatusBar = () => {
     <div className="h-6 bg-os-gray border-b border-os-dark-gray shadow-[0_1px_0_#ffffff] flex items-center justify-between px-1 text-[11px] font-dialog text-black select-none shrink-0 w-full z-50">
       
       {/* OS Branding / Carrier Space */}
-      <div className="flex items-center gap-1 font-bold pl-1 text-os-navy">
+      <div className="flex items-center gap-1 font-bold pl-1 text-os-navy truncate">
         VISHAL OS 98
       </div>
       
       {/* System Status Indicators */}
-      <div className="flex items-center h-full py-[2px] gap-1">
+      <div className="flex items-center h-full py-[2px] gap-1 shrink-0">
         
         {/* Network Indicator */}
         <div className="h-full px-1 flex items-center shadow-retro-inset bg-os-gray" title={isOnline ? 'Online' : 'Offline'}>

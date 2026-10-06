@@ -71,7 +71,7 @@ const MobilePaint = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-os-gray text-black font-sans w-full select-none">
+    <div className="flex flex-col flex-1 min-h-0 w-full h-full bg-os-gray text-black font-sans select-none">
       
       {/* Mobile-Optimized Toolbar */}
       <div className="flex flex-col gap-2 p-1.5 bg-os-gray border-b border-os-dark-gray shrink-0 shadow-retro-inset">
@@ -104,7 +104,7 @@ const MobilePaint = () => {
             <div 
               key={c}
               onClick={() => { playSound('click'); setColor(c); setIsEraser(false); }}
-              className={`w-5 h-5 border-2 cursor-pointer ${color === c && !isEraser ? 'border-black' : 'border-os-gray shadow-retro-outset'}`}
+              className={`w-5 h-5 border-2 cursor-pointer shrink-0 ${color === c && !isEraser ? 'border-black' : 'border-os-gray shadow-retro-outset'}`}
               style={{ backgroundColor: c }}
             />
           ))}
@@ -112,8 +112,8 @@ const MobilePaint = () => {
       </div>
 
       {/* Canvas Area */}
-      <div className="flex-1 bg-os-dark-gray p-1 overflow-hidden flex">
-        <div className="flex-1 bg-white shadow-retro-inset border border-black relative">
+      <div className="flex-1 min-h-0 bg-os-dark-gray p-1 overflow-hidden flex">
+        <div className="flex-1 min-h-0 bg-white shadow-retro-inset border border-black relative">
           <canvas
             ref={canvasRef}
             onMouseDown={startDrawing}

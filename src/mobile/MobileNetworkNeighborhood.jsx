@@ -33,7 +33,7 @@ const MobileNetworkNeighborhood = ({ onOpenApp }) => {
   ];
 
   return (
-    <div className="flex flex-col h-full bg-white text-black font-sans text-sm">
+    <div className="flex flex-col flex-1 min-h-0 w-full h-full bg-white text-black font-sans text-sm">
       {/* Mobile Toolbar */}
       <div className="flex items-center p-1.5 bg-os-gray border-b border-os-dark-gray gap-2 shrink-0">
         <button 
@@ -42,13 +42,13 @@ const MobileNetworkNeighborhood = ({ onOpenApp }) => {
         >
           Up
         </button>
-        <div className="flex-1 shadow-retro-inset bg-white px-2 py-1.5 truncate text-xs border border-os-dark-gray">
+        <div className="flex-1 min-w-0 shadow-retro-inset bg-white px-2 py-1.5 truncate text-xs border border-os-dark-gray">
           Network Neighborhood
         </div>
       </div>
 
       {/* Chunky Grid Content Area */}
-      <div className="flex-1 overflow-y-auto p-4 flex flex-wrap gap-6 content-start bg-white custom-scrollbar">
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 flex flex-wrap gap-6 content-start bg-white custom-scrollbar">
         {items.map(item => (
           <div 
             key={item.id} 

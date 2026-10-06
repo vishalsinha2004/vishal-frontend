@@ -178,14 +178,31 @@ const MobileWindow = ({
 
     const techTags = parseTechStack(app.tech_stack);
 
+    // --- DYNAMIC PROJECT / APP VIEW ---
     return (
-      <article className="flex flex-col h-full bg-os-gray text-os-text p-2 overflow-y-auto font-sans">
-        <header className="flex flex-col gap-3 mb-4 bg-os-gray shadow-retro-outset p-3">
+      <article className="flex flex-col flex-1 min-h-0 w-full h-full bg-os-gray text-os-text p-2 overflow-y-auto custom-scrollbar font-sans relative">
+        
+        {/* NEW BACK BUTTON TO RETURN TO PROJECT MENU */}
+        <div className="flex gap-2 mb-3 shrink-0">
+          <button 
+            onClick={(e) => { 
+              e.stopPropagation();
+              playSound('click'); 
+              onClose(); // Closes this project window
+              onOpenApp(app.isGame ? 'games-folder' : 'projects-folder'); // Refocuses the menu
+            }}
+            className="retro-btn px-3 py-1.5 text-xs font-bold flex items-center gap-2 shadow-retro-outset active:shadow-retro-inset bg-os-gray text-black"
+          >
+            <span className="text-sm leading-none">◀</span> Back to Menu
+          </button>
+        </div>
+
+        <header className="flex flex-col gap-3 mb-4 bg-os-gray shadow-retro-outset p-3 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-os-white shadow-retro-inset p-1 flex items-center justify-center border border-os-dark-gray shrink-0">
               <img src={app.icon} alt={app.name} className="w-full h-full object-contain" />
             </div>
-            <div className="min-w-0">
+            <div className="flex-1 min-w-0">
               <h1 className="text-base font-bold truncate leading-tight">{app.name}</h1>
               <span className="text-[10px] text-os-dark-gray">{app.project_type || 'Application'}</span>
             </div>
@@ -197,7 +214,7 @@ const MobileWindow = ({
           </nav>
         </header>
 
-        <section className="flex flex-col gap-3 mb-4">
+        <section className="flex flex-col gap-3 mb-4 shrink-0">
           <div className="bg-os-white shadow-retro-inset p-3 border border-os-dark-gray">
             <h2 className="font-bold border-b border-os-dark-gray mb-2 pb-1 text-sm">Description</h2>
             <p className="text-xs">{app.description || "No description provided."}</p>
@@ -213,7 +230,7 @@ const MobileWindow = ({
         </section>
 
         {(app.frontend_repo || app.backend_repo) && (
-          <section className="mb-4 bg-os-gray shadow-retro-outset p-2" aria-label="Repository Files">
+          <section className="mb-4 bg-os-gray shadow-retro-outset p-2 shrink-0" aria-label="Repository Files">
             <div className="flex gap-1 mb-2 overflow-x-auto">
               {app.frontend_repo && <button onClick={() => { playSound('click'); setActiveTab('frontend'); }} className={`retro-btn text-[10px] px-2 py-1 whitespace-nowrap ${activeTab === 'frontend' ? 'shadow-retro-inset' : ''}`}>Frontend Files</button>}
               {app.backend_repo && <button onClick={() => { playSound('click'); setActiveTab('backend'); }} className={`retro-btn text-[10px] px-2 py-1 whitespace-nowrap ${activeTab === 'backend' ? 'shadow-retro-inset' : ''}`}>Backend Files</button>}
@@ -224,11 +241,11 @@ const MobileWindow = ({
         )}
 
         {app.live_link ? (
-          <section className="flex-1 min-h-[300px] border border-os-dark-gray" aria-label="Live Preview">
+          <section className="flex-1 min-h-[300px] border border-os-dark-gray shrink-0" aria-label="Live Preview">
             <InternetExplorer initialUrl={app.live_link} />
           </section>
         ) : (
-          <div className="flex-1 flex items-center justify-center bg-os-white shadow-retro-inset border border-os-dark-gray min-h-[150px]">
+          <div className="flex-1 flex items-center justify-center bg-os-white shadow-retro-inset border border-os-dark-gray min-h-[150px] shrink-0">
             <span className="text-os-dark-gray text-xs">Cannot connect to remote server.</span>
           </div>
         )}
@@ -274,7 +291,7 @@ const MobileWindow = ({
         </div>
       </nav>
 
-      <div className="flex-1 bg-os-gray overflow-hidden border-t border-os-white flex flex-col">
+      <div className="flex-1 min-h-0 w-full bg-os-gray overflow-hidden border-t border-os-white flex flex-col relative">
         {renderAppContent()}
       </div>
     </div>

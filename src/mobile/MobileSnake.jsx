@@ -104,17 +104,17 @@ const MobileSnake = () => {
   }, [direction, food, gameOver, isPaused, hasStarted, score, generateFood, playSound]);
 
   return (
-    <div className="flex flex-col items-center h-full bg-os-gray font-sans select-none overflow-y-auto custom-scrollbar p-2 pb-6">
+    <div className="flex flex-col items-center flex-1 min-h-0 w-full bg-os-gray font-sans select-none overflow-y-auto custom-scrollbar p-2 pb-6">
       
       {/* LCD Header */}
-      <div className="w-full max-w-[340px] flex justify-between items-center bg-black border-2 border-os-dark-gray shadow-retro-inset p-2 mb-2 text-[#00ff00] font-pixel text-lg leading-none mt-2">
+      <div className="w-full max-w-[340px] shrink-0 flex justify-between items-center bg-black border-2 border-os-dark-gray shadow-retro-inset p-2 mb-2 text-[#00ff00] font-pixel text-lg leading-none mt-2">
         <span>SCORE: {score.toString().padStart(4, '0')}</span>
         <span className="text-red-500 animate-pulse">{gameOver ? 'GAME OVER' : ''}</span>
       </div>
 
       {/* Game Grid Container */}
       <div 
-        className="w-full max-w-[340px] aspect-square bg-[#0a1a0a] border-4 border-os-dark-gray shadow-retro-inset relative"
+        className="w-full max-w-[340px] shrink-0 aspect-square bg-[#0a1a0a] border-4 border-os-dark-gray shadow-retro-inset relative"
         style={{ 
           display: 'grid',
           gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
@@ -146,7 +146,7 @@ const MobileSnake = () => {
       </div>
 
       {/* Action Controls */}
-      <div className="flex w-full max-w-[340px] justify-between mt-3 gap-2">
+      <div className="flex w-full max-w-[340px] shrink-0 justify-between mt-3 gap-2">
         <button onClick={resetGame} className="retro-btn flex-1 py-2 font-bold text-xs">RESTART</button>
         <button onClick={() => { playSound('click'); setIsPaused(!isPaused); }} className="retro-btn flex-1 py-2 font-bold text-xs text-red-700">
           {isPaused ? 'RESUME' : 'PAUSE'}
@@ -154,7 +154,7 @@ const MobileSnake = () => {
       </div>
 
       {/* Mobile D-Pad Control Grid */}
-      <div className="mt-4 grid grid-cols-3 grid-rows-3 gap-1 w-[200px] h-[200px] bg-os-gray p-2 shadow-retro-outset border border-os-dark-gray rounded-full touch-manipulation">
+      <div className="mt-4 shrink-0 grid grid-cols-3 grid-rows-3 gap-1 w-[200px] h-[200px] bg-os-gray p-2 shadow-retro-outset border border-os-dark-gray rounded-full touch-manipulation">
         <div />
         <button onClick={() => handleDPad('UP')} className="retro-btn text-xl font-bold rounded-t-lg active:bg-[#e0e0e0] shadow-retro-outset active:shadow-retro-inset flex items-center justify-center pb-1">▲</button>
         <div />

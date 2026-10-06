@@ -5,18 +5,21 @@ const MobileProjectPage = ({ apps, onOpenApp }) => {
   const { playSound } = useSound();
 
   return (
-    <div className="flex flex-col h-full bg-white text-black font-sans text-sm">
+    <div className="flex flex-col flex-1 min-h-0 w-full h-full bg-white text-black font-sans text-sm">
+      
+      {/* Top Toolbar */}
       <div className="flex items-center p-1.5 bg-os-gray border-b border-os-dark-gray gap-2 shrink-0">
-        <div className="flex-1 shadow-retro-inset bg-white px-2 py-1.5 truncate text-xs border border-os-dark-gray">
+        <div className="flex-1 min-w-0 shadow-retro-inset bg-white px-2 py-1.5 truncate text-xs border border-os-dark-gray">
           Found {apps.length} items
         </div>
       </div>
       
-      <div className="flex-1 overflow-y-auto p-2 bg-os-white custom-scrollbar flex flex-col gap-2">
+      {/* Project List (Strict internal scrolling) */}
+      <div className="flex-1 min-h-0 overflow-y-auto p-2 bg-os-white custom-scrollbar flex flex-col gap-2">
         {apps.map(app => (
           <div 
             key={app.id}
-            className="bg-os-gray border border-os-dark-gray shadow-retro-outset p-2 flex flex-col gap-2 cursor-pointer active:shadow-retro-inset"
+            className="bg-os-gray border border-os-dark-gray shadow-retro-outset p-2 flex flex-col gap-2 cursor-pointer active:shadow-retro-inset shrink-0"
             onClick={() => { playSound('click'); onOpenApp(app.id); }}
           >
             <div className="flex items-center gap-3">

@@ -33,11 +33,11 @@ const MobileSearch = ({ systemApps, onOpenApp, closeSearch }) => {
       onClick={closeSearch}
     >
       <div 
-        className="bg-os-gray border border-os-white shadow-[2px_-2px_5px_rgba(0,0,0,0.5)] w-full max-w-[340px] p-1 flex flex-col text-black font-sans shadow-retro-outset"
+        className="bg-os-gray border border-os-white shadow-[2px_-2px_5px_rgba(0,0,0,0.5)] w-full max-w-[340px] max-h-[85dvh] min-h-0 p-1 flex flex-col text-black font-sans shadow-retro-outset"
         onClick={(e) => e.stopPropagation()} // Prevent clicking the dialog from closing the search overlay
       >
         {/* Title Bar */}
-        <div className="flex justify-between items-center bg-[#000080] text-white font-dialog font-bold text-xs px-1 py-0.5 mb-2">
+        <div className="flex justify-between items-center bg-[#000080] text-white font-dialog font-bold text-xs px-1 py-0.5 mb-2 shrink-0">
           <div className="flex items-center gap-1">
             <img src={fileExplorerIcon} alt="Find" className="w-4 h-4 object-contain" style={{ imageRendering: 'pixelated' }}/>
             <span>Find: All Files</span>
@@ -51,20 +51,20 @@ const MobileSearch = ({ systemApps, onOpenApp, closeSearch }) => {
         </div>
         
         {/* Search Input Area */}
-        <div className="flex gap-2 px-1 mb-2">
+        <div className="flex gap-2 px-1 mb-2 shrink-0">
           <span className="text-xs self-center font-bold">Named:</span>
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 shadow-retro-inset bg-white px-1 py-1 text-xs outline-none font-sans"
+            className="flex-1 shadow-retro-inset bg-white px-1 py-1 text-xs outline-none font-sans min-w-0"
             placeholder="Search apps, projects..."
           />
         </div>
 
         {/* Results Area */}
-        <div className="bg-os-white shadow-retro-inset border border-os-dark-gray h-[250px] overflow-y-auto m-1 p-1 custom-scrollbar">
+        <div className="flex-1 min-h-0 bg-os-white shadow-retro-inset border border-os-dark-gray overflow-y-auto m-1 p-1 custom-scrollbar">
           {query.trim() === '' ? (
             <div className="text-os-dark-gray text-xs h-full flex items-center justify-center italic">
               Type to start searching...
@@ -92,7 +92,7 @@ const MobileSearch = ({ systemApps, onOpenApp, closeSearch }) => {
         </div>
         
         {/* Controls */}
-        <div className="flex justify-end gap-2 p-1 border-t border-os-dark-gray mt-1">
+        <div className="flex justify-end gap-2 p-1 border-t border-os-dark-gray mt-1 shrink-0">
           <button 
             className="retro-btn text-xs px-4 py-1"
             onClick={() => { playSound('click'); closeSearch(); }}
